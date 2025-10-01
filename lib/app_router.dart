@@ -1,0 +1,58 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'core/constants/app_routes.dart';
+import 'core/models/species.dart';
+import 'core/repositories/observation_repository.dart';
+import 'features/observation_form/bloc/observation_form_bloc.dart';
+import 'features/observation_form/presentation/observation_form_screen.dart';
+import 'features/observation_list/presentation/observation_list_screen.dart';
+import 'features/observation_map/presentation/observation_map_screen.dart';
+import 'features/species_list/presentation/species_list_screen.dart';
+
+class AppRouter {
+  AppRouter({required ObservationRepository observationRepository})
+    : _observationRepository = observationRepository;
+
+  final ObservationRepository _observationRepository;
+
+  Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case AppRoutes.speciesList:
+        return MaterialPageRoute(
+          builder: (_) => const SpeciesListScreen(),
+          settings: settings,
+        );
+      case AppRoutes.observationForm:
+        final species = settings.arguments as List<Species>? ?? <Species>[];
+        return MaterialPageRoute(
+          builder: (context) {
+            return BlocProvider(
+              create:
+                  (_) => ObservationFormBloc(
+                    observationRepository: _observationRepository,
+                    selectedSpecies: species,
+                  ),
+              child: ObservationFormScreen(selectedSpecies: species),
+            );
+          },
+          settings: settings,
+        );
+      case AppRoutes.observationList:
+        return MaterialPageRoute(
+          builder: (_) => const ObservationListScreen(),
+          settings: settings,
+        );
+      case AppRoutes.observationMap:
+        return MaterialPageRoute(
+          builder: (_) => const ObservationMapScreen(),
+          settings: settings,
+        );
+      default:
+        return MaterialPageRoute(
+          builder: (_) => const SpeciesListScreen(),
+          settings: settings,
+        );
+    }
+  }
+}

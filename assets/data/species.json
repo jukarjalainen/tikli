@@ -1,0 +1,1090 @@
+[
+  {
+    "id": "001",
+    "species": "Alli"
+  },
+  {
+    "id": "002",
+    "species": "Allihaahka"
+  },
+  {
+    "id": "003",
+    "species": "Ampuhaukka"
+  },
+  {
+    "id": "004",
+    "species": "Arosuohaukka"
+  },
+  {
+    "id": "005",
+    "species": "Avosetti"
+  },
+  {
+    "id": "006",
+    "species": "Etelänkiisla"
+  },
+  {
+    "id": "007",
+    "species": "Fasaani"
+  },
+  {
+    "id": "008",
+    "species": "Haahka"
+  },
+  {
+    "id": "009",
+    "species": "Haapana"
+  },
+  {
+    "id": "010",
+    "species": "Haarahaukka"
+  },
+  {
+    "id": "011",
+    "species": "Haarapääsky"
+  },
+  {
+    "id": "012",
+    "species": "Harakka"
+  },
+  {
+    "id": "013",
+    "species": "Harjalintu"
+  },
+  {
+    "id": "014",
+    "species": "Harmaahaikara"
+  },
+  {
+    "id": "015",
+    "species": "Harmaalokki"
+  },
+  {
+    "id": "016",
+    "species": "Harmaapäätikka"
+  },
+  {
+    "id": "017",
+    "species": "Harmaasieppo"
+  },
+  {
+    "id": "018",
+    "species": "Harmaasorsa"
+  },
+  {
+    "id": "019",
+    "species": "Heinäkurppa"
+  },
+  {
+    "id": "020",
+    "species": "Heinätavi"
+  },
+  {
+    "id": "021",
+    "species": "Helmipöllö"
+  },
+  {
+    "id": "022",
+    "species": "Hemppo"
+  },
+  {
+    "id": "023",
+    "species": "Hernekerttu"
+  },
+  {
+    "id": "024",
+    "species": "Hiirihaukka"
+  },
+  {
+    "id": "025",
+    "species": "Hiiripöllö"
+  },
+  {
+    "id": "026",
+    "species": "Hippiäinen"
+  },
+  {
+    "id": "027",
+    "species": "Hippiäisuunilintu"
+  },
+  {
+    "id": "028",
+    "species": "Huuhkaja"
+  },
+  {
+    "id": "029",
+    "species": "Härkälintu"
+  },
+  {
+    "id": "030",
+    "species": "Hömötiainen"
+  },
+  {
+    "id": "031",
+    "species": "Idänuunilintu"
+  },
+  {
+    "id": "032",
+    "species": "Isokoskelo"
+  },
+  {
+    "id": "033",
+    "species": "Isokäpylintu"
+  },
+  {
+    "id": "034",
+    "species": "Isolepinkäinen"
+  },
+  {
+    "id": "035",
+    "species": "Isolokki"
+  },
+  {
+    "id": "036",
+    "species": "Isosirri"
+  },
+  {
+    "id": "037",
+    "species": "Jalohaikara"
+  },
+  {
+    "id": "038",
+    "species": "Jouhisorsa"
+  },
+  {
+    "id": "039",
+    "species": "Jänkäkurppa"
+  },
+  {
+    "id": "040",
+    "species": "Jänkäsirriäinen"
+  },
+  {
+    "id": "041",
+    "species": "Järripeippo"
+  },
+  {
+    "id": "042",
+    "species": "Jääkuikka"
+  },
+  {
+    "id": "043",
+    "species": "Kaakkuri"
+  },
+  {
+    "id": "044",
+    "species": "Kalalokki"
+  },
+  {
+    "id": "045",
+    "species": "Kalasääski"
+  },
+  {
+    "id": "046",
+    "species": "Kalatiira"
+  },
+  {
+    "id": "047",
+    "species": "Kanadanhanhi"
+  },
+  {
+    "id": "048",
+    "species": "Kanahaukka"
+  },
+  {
+    "id": "049",
+    "species": "Kangaskiuru"
+  },
+  {
+    "id": "050",
+    "species": "Kapustarinta"
+  },
+  {
+    "id": "051",
+    "species": "Karikukko"
+  },
+  {
+    "id": "052",
+    "species": "Kattohaikara"
+  },
+  {
+    "id": "053",
+    "species": "Kaulushaikara"
+  },
+  {
+    "id": "054",
+    "species": "Kehrääjä"
+  },
+  {
+    "id": "055",
+    "species": "Keltasirkku"
+  },
+  {
+    "id": "056",
+    "species": "Keltavästäräkki"
+  },
+  {
+    "id": "057",
+    "species": "Keräkurmitsa"
+  },
+  {
+    "id": "058",
+    "species": "Kesykyyhky"
+  },
+  {
+    "id": "059",
+    "species": "Kiiruna"
+  },
+  {
+    "id": "060",
+    "species": "Kiljuhanhi"
+  },
+  {
+    "id": "061",
+    "species": "Kiljukotka"
+  },
+  {
+    "id": "062",
+    "species": "Kirjokerttu"
+  },
+  {
+    "id": "063",
+    "species": "Kirjosieppo"
+  },
+  {
+    "id": "064",
+    "species": "Kirjosiipikäpylintu"
+  },
+  {
+    "id": "065",
+    "species": "Kiuru"
+  },
+  {
+    "id": "066",
+    "species": "Kivitasku"
+  },
+  {
+    "id": "067",
+    "species": "Korppi"
+  },
+  {
+    "id": "068",
+    "species": "Koskikara"
+  },
+  {
+    "id": "069",
+    "species": "Kottarainen"
+  },
+  {
+    "id": "070",
+    "species": "Kuhankeittäjä"
+  },
+  {
+    "id": "071",
+    "species": "Kuikka"
+  },
+  {
+    "id": "072",
+    "species": "Kulorastas"
+  },
+  {
+    "id": "073",
+    "species": "Kultarinta"
+  },
+  {
+    "id": "074",
+    "species": "Kultasirkku"
+  },
+  {
+    "id": "075",
+    "species": "Kuningaskalastaja"
+  },
+  {
+    "id": "076",
+    "species": "Kuovi"
+  },
+  {
+    "id": "077",
+    "species": "Kuovisirri"
+  },
+  {
+    "id": "078",
+    "species": "Kurki"
+  },
+  {
+    "id": "079",
+    "species": "Kuukkeli"
+  },
+  {
+    "id": "080",
+    "species": "Kuusitiainen"
+  },
+  {
+    "id": "081",
+    "species": "Kyhmyhaahka"
+  },
+  {
+    "id": "082",
+    "species": "Kyhmyjoutsen"
+  },
+  {
+    "id": "083",
+    "species": "Käenpiika"
+  },
+  {
+    "id": "084",
+    "species": "Käki"
+  },
+  {
+    "id": "085",
+    "species": "Käpytikka"
+  },
+  {
+    "id": "086",
+    "species": "Lampiviklo"
+  },
+  {
+    "id": "087",
+    "species": "Lapasorsa"
+  },
+  {
+    "id": "088",
+    "species": "Lapasotka"
+  },
+  {
+    "id": "089",
+    "species": "Lapinkirvinen"
+  },
+  {
+    "id": "090",
+    "species": "Lapinpöllö"
+  },
+  {
+    "id": "091",
+    "species": "Lapinsirkku"
+  },
+  {
+    "id": "092",
+    "species": "Lapinsirri"
+  },
+  {
+    "id": "093",
+    "species": "Lapintiainen"
+  },
+  {
+    "id": "094",
+    "species": "Lapintiira"
+  },
+  {
+    "id": "095",
+    "species": "Lapinuunilintu"
+  },
+  {
+    "id": "096",
+    "species": "Laulujoutsen"
+  },
+  {
+    "id": "097",
+    "species": "Laulurastas"
+  },
+  {
+    "id": "098",
+    "species": "Lehtokerttu"
+  },
+  {
+    "id": "099",
+    "species": "Lehtokurppa"
+  },
+  {
+    "id": "100",
+    "species": "Lehtopöllö"
+  },
+  {
+    "id": "101",
+    "species": "Leppälintu"
+  },
+  {
+    "id": "102",
+    "species": "Leveäpyrstökihu"
+  },
+  {
+    "id": "103",
+    "species": "Liejukana"
+  },
+  {
+    "id": "104",
+    "species": "Liro"
+  },
+  {
+    "id": "105",
+    "species": "Luhtahuitti"
+  },
+  {
+    "id": "106",
+    "species": "Luhtakana"
+  },
+  {
+    "id": "107",
+    "species": "Luhtakerttunen"
+  },
+  {
+    "id": "108",
+    "species": "Luotokirvinen"
+  },
+  {
+    "id": "109",
+    "species": "Lyhytnokkahanhi"
+  },
+  {
+    "id": "110",
+    "species": "Maakotka"
+  },
+  {
+    "id": "111",
+    "species": "Mehiläishaukka"
+  },
+  {
+    "id": "112",
+    "species": "Merihanhi"
+  },
+  {
+    "id": "113",
+    "species": "Meriharakka"
+  },
+  {
+    "id": "114",
+    "species": "Merikihu"
+  },
+  {
+    "id": "115",
+    "species": "Merikotka"
+  },
+  {
+    "id": "116",
+    "species": "Merilokki"
+  },
+  {
+    "id": "117",
+    "species": "Merimetso"
+  },
+  {
+    "id": "118",
+    "species": "Merisirri"
+  },
+  {
+    "id": "119",
+    "species": "Metso"
+  },
+  {
+    "id": "120",
+    "species": "Metsähanhi"
+  },
+  {
+    "id": "121",
+    "species": "Metsäkirvinen"
+  },
+  {
+    "id": "122",
+    "species": "Metsäviklo"
+  },
+  {
+    "id": "123",
+    "species": "Mustahaikara"
+  },
+  {
+    "id": "124",
+    "species": "Mustakurkku-uikku"
+  },
+  {
+    "id": "125",
+    "species": "Mustaleppälintu"
+  },
+  {
+    "id": "126",
+    "species": "Mustalintu"
+  },
+  {
+    "id": "127",
+    "species": "Mustapyrstökuiri"
+  },
+  {
+    "id": "128",
+    "species": "Mustapääkerttu"
+  },
+  {
+    "id": "129",
+    "species": "Mustapääsirkku"
+  },
+  {
+    "id": "130",
+    "species": "Mustarastas"
+  },
+  {
+    "id": "131",
+    "species": "Mustatiira"
+  },
+  {
+    "id": "132",
+    "species": "Mustavaris"
+  },
+  {
+    "id": "133",
+    "species": "Mustaviklo"
+  },
+  {
+    "id": "134",
+    "species": "Muuttohaukka"
+  },
+  {
+    "id": "135",
+    "species": "Naakka"
+  },
+  {
+    "id": "136",
+    "species": "Naurulokki"
+  },
+  {
+    "id": "137",
+    "species": "Niittykirvinen"
+  },
+  {
+    "id": "138",
+    "species": "Niittysuohaukka"
+  },
+  {
+    "id": "139",
+    "species": "Nokikana"
+  },
+  {
+    "id": "140",
+    "species": "Nokkavarpunen"
+  },
+  {
+    "id": "141",
+    "species": "Nuolihaukka"
+  },
+  {
+    "id": "142",
+    "species": "Närhi"
+  },
+  {
+    "id": "143",
+    "species": "Pajulintu"
+  },
+  {
+    "id": "144",
+    "species": "Pajusirkku"
+  },
+  {
+    "id": "145",
+    "species": "Palokärki"
+  },
+  {
+    "id": "146",
+    "species": "Peippo"
+  },
+  {
+    "id": "147",
+    "species": "Peltopyy"
+  },
+  {
+    "id": "148",
+    "species": "Peltosirkku"
+  },
+  {
+    "id": "149",
+    "species": "Pensaskerttu"
+  },
+  {
+    "id": "150",
+    "species": "Pensassirkkalintu"
+  },
+  {
+    "id": "151",
+    "species": "Pensastasku"
+  },
+  {
+    "id": "152",
+    "species": "Peukaloinen"
+  },
+  {
+    "id": "153",
+    "species": "Piekana"
+  },
+  {
+    "id": "154",
+    "species": "Pikkuhuitti"
+  },
+  {
+    "id": "155",
+    "species": "Pikkujoutsen"
+  },
+  {
+    "id": "156",
+    "species": "Pikkukajava"
+  },
+  {
+    "id": "157",
+    "species": "Pikkukiljukotka"
+  },
+  {
+    "id": "158",
+    "species": "Pikkukultarinta"
+  },
+  {
+    "id": "159",
+    "species": "Pikkukuovi"
+  },
+  {
+    "id": "160",
+    "species": "Pikkukäpylintu"
+  },
+  {
+    "id": "161",
+    "species": "Pikkulepinkäinen"
+  },
+  {
+    "id": "162",
+    "species": "Pikkulokki"
+  },
+  {
+    "id": "163",
+    "species": "Pikkusieppo"
+  },
+  {
+    "id": "164",
+    "species": "Pikkusirkku"
+  },
+  {
+    "id": "165",
+    "species": "Pikkusirri"
+  },
+  {
+    "id": "166",
+    "species": "Pikkutiira"
+  },
+  {
+    "id": "167",
+    "species": "Pikkutikka"
+  },
+  {
+    "id": "168",
+    "species": "Pikkutylli"
+  },
+  {
+    "id": "169",
+    "species": "Pikku-uikku"
+  },
+  {
+    "id": "170",
+    "species": "Pikkuvarpunen"
+  },
+  {
+    "id": "171",
+    "species": "Pilkkasiipi"
+  },
+  {
+    "id": "172",
+    "species": "Pohjansirkku"
+  },
+  {
+    "id": "173",
+    "species": "Pohjantikka"
+  },
+  {
+    "id": "174",
+    "species": "Pulmunen"
+  },
+  {
+    "id": "175",
+    "species": "Pulmusirri"
+  },
+  {
+    "id": "176",
+    "species": "Punajalkahaukka"
+  },
+  {
+    "id": "177",
+    "species": "Punajalkaviklo"
+  },
+  {
+    "id": "178",
+    "species": "Punakaulahanhi"
+  },
+  {
+    "id": "179",
+    "species": "Punakottarainen"
+  },
+  {
+    "id": "180",
+    "species": "Punakuiri"
+  },
+  {
+    "id": "181",
+    "species": "Punakylkirastas"
+  },
+  {
+    "id": "182",
+    "species": "Punarinta"
+  },
+  {
+    "id": "183",
+    "species": "Punasotka"
+  },
+  {
+    "id": "184",
+    "species": "Punatulkku"
+  },
+  {
+    "id": "185",
+    "species": "Punavarpunen"
+  },
+  {
+    "id": "186",
+    "species": "Pussitiainen"
+  },
+  {
+    "id": "187",
+    "species": "Puukiipijä"
+  },
+  {
+    "id": "188",
+    "species": "Pyrstötiainen"
+  },
+  {
+    "id": "189",
+    "species": "Pyy"
+  },
+  {
+    "id": "190",
+    "species": "Pähkinähakki"
+  },
+  {
+    "id": "191",
+    "species": "Pähkinänakkeli"
+  },
+  {
+    "id": "192",
+    "species": "Rantakurvi"
+  },
+  {
+    "id": "193",
+    "species": "Rantasipi"
+  },
+  {
+    "id": "194",
+    "species": "Rastaskerttunen"
+  },
+  {
+    "id": "195",
+    "species": "Rautiainen"
+  },
+  {
+    "id": "196",
+    "species": "Riekko"
+  },
+  {
+    "id": "197",
+    "species": "Riskilä"
+  },
+  {
+    "id": "198",
+    "species": "Ristisorsa"
+  },
+  {
+    "id": "199",
+    "species": "Ruisrääkkä"
+  },
+  {
+    "id": "200",
+    "species": "Ruokki"
+  },
+  {
+    "id": "201",
+    "species": "Ruokokerttunen"
+  },
+  {
+    "id": "202",
+    "species": "Ruokosirkkalintu"
+  },
+  {
+    "id": "203",
+    "species": "Ruskosuohaukka"
+  },
+  {
+    "id": "204",
+    "species": "Rytikerttunen"
+  },
+  {
+    "id": "205",
+    "species": "Räkättirastas"
+  },
+  {
+    "id": "206",
+    "species": "Räyskä"
+  },
+  {
+    "id": "207",
+    "species": "Räystäspääsky"
+  },
+  {
+    "id": "208",
+    "species": "Sarvipöllö"
+  },
+  {
+    "id": "209",
+    "species": "Satakieli"
+  },
+  {
+    "id": "210",
+    "species": "Selkälokki"
+  },
+  {
+    "id": "211",
+    "species": "Sepelhanhi"
+  },
+  {
+    "id": "212",
+    "species": "Sepelkyyhky"
+  },
+  {
+    "id": "213",
+    "species": "Sepelrastas"
+  },
+  {
+    "id": "214",
+    "species": "Silkkiuikku"
+  },
+  {
+    "id": "215",
+    "species": "Sinipyrstö"
+  },
+  {
+    "id": "216",
+    "species": "Sinirinta"
+  },
+  {
+    "id": "217",
+    "species": "Sinisorsa"
+  },
+  {
+    "id": "218",
+    "species": "Sinisuohaukka"
+  },
+  {
+    "id": "219",
+    "species": "Sinitiainen"
+  },
+  {
+    "id": "220",
+    "species": "Sirittäjä"
+  },
+  {
+    "id": "221",
+    "species": "Sitruunavästäräkki"
+  },
+  {
+    "id": "222",
+    "species": "Suokukko"
+  },
+  {
+    "id": "223",
+    "species": "Suopöllö"
+  },
+  {
+    "id": "224",
+    "species": "Suosirri"
+  },
+  {
+    "id": "225",
+    "species": "Taigauunilintu"
+  },
+  {
+    "id": "226",
+    "species": "Taivaanvuohi"
+  },
+  {
+    "id": "227",
+    "species": "Talitiainen"
+  },
+  {
+    "id": "228",
+    "species": "Tavi"
+  },
+  {
+    "id": "229",
+    "species": "Taviokuurna"
+  },
+  {
+    "id": "230",
+    "species": "Teeri"
+  },
+  {
+    "id": "231",
+    "species": "Telkkä"
+  },
+  {
+    "id": "232",
+    "species": "Tervapääsky"
+  },
+  {
+    "id": "233",
+    "species": "Tikli"
+  },
+  {
+    "id": "234",
+    "species": "Tilhi"
+  },
+  {
+    "id": "235",
+    "species": "Tiltaltti"
+  },
+  {
+    "id": "236",
+    "species": "Tukkakoskelo"
+  },
+  {
+    "id": "237",
+    "species": "Tukkasotka"
+  },
+  {
+    "id": "238",
+    "species": "Tundrahanhi"
+  },
+  {
+    "id": "239",
+    "species": "Tundrakurmitsa"
+  },
+  {
+    "id": "240",
+    "species": "Tundraurpiainen"
+  },
+  {
+    "id": "241",
+    "species": "Tunturihaukka"
+  },
+  {
+    "id": "242",
+    "species": "Tunturikihu"
+  },
+  {
+    "id": "243",
+    "species": "Tunturikiuru"
+  },
+  {
+    "id": "244",
+    "species": "Tunturipöllö"
+  },
+  {
+    "id": "245",
+    "species": "Turkinkyyhky"
+  },
+  {
+    "id": "246",
+    "species": "Turturikyyhky"
+  },
+  {
+    "id": "247",
+    "species": "Tuulihaukka"
+  },
+  {
+    "id": "248",
+    "species": "Tylli"
+  },
+  {
+    "id": "249",
+    "species": "Törmäpääsky"
+  },
+  {
+    "id": "250",
+    "species": "Töyhtöhyyppä"
+  },
+  {
+    "id": "251",
+    "species": "Töyhtötiainen"
+  },
+  {
+    "id": "252",
+    "species": "Uivelo"
+  },
+  {
+    "id": "253",
+    "species": "Urpiainen"
+  },
+  {
+    "id": "254",
+    "species": "Uuttukyyhky"
+  },
+  {
+    "id": "255",
+    "species": "Valkoposkihanhi"
+  },
+  {
+    "id": "256",
+    "species": "Valkoselkätikka"
+  },
+  {
+    "id": "257",
+    "species": "Valkoviklo"
+  },
+  {
+    "id": "258",
+    "species": "Varis"
+  },
+  {
+    "id": "259",
+    "species": "Varpunen"
+  },
+  {
+    "id": "260",
+    "species": "Varpushaukka"
+  },
+  {
+    "id": "261",
+    "species": "Varpuspöllö"
+  },
+  {
+    "id": "262",
+    "species": "Vesipääsky"
+  },
+  {
+    "id": "263",
+    "species": "Viherpeippo"
+  },
+  {
+    "id": "264",
+    "species": "Vihervarpunen"
+  },
+  {
+    "id": "265",
+    "species": "Viiksitimali"
+  },
+  {
+    "id": "266",
+    "species": "Viiriäinen"
+  },
+  {
+    "id": "267",
+    "species": "Viirupöllö"
+  },
+  {
+    "id": "268",
+    "species": "Viitakerttunen"
+  },
+  {
+    "id": "269",
+    "species": "Viitasirkkalintu"
+  },
+  {
+    "id": "270",
+    "species": "Virtavästäräkki"
+  },
+  {
+    "id": "271",
+    "species": "Vuorihemppo"
+  },
+  {
+    "id": "272",
+    "species": "Västäräkki"
+  }
+]

@@ -1,4 +1,4 @@
-﻿import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -44,9 +44,6 @@ class ObservationFormBloc
     } else {
       updated.add(event.type);
     }
-    if (updated.isEmpty) {
-      updated.add(ObservationType.yearly);
-    }
     emit(state.copyWith(selectedTypes: updated));
   }
 
@@ -91,6 +88,15 @@ class ObservationFormBloc
       );
       return;
     }
+    if (state.selectedTypes.isEmpty) {
+      emit(
+        state.copyWith(
+          status: ObservationFormStatus.failure,
+          errorMessage: 'Valitse vahintaan yksi pinnatyyppi.',
+        ),
+      );
+      return;
+    }
     emit(state.copyWith(status: ObservationFormStatus.saving));
     try {
       for (final species in state.selectedSpecies) {
@@ -117,4 +123,3 @@ class ObservationFormBloc
     }
   }
 }
-

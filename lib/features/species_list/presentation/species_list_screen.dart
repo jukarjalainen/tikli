@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/constants/app_routes.dart';
 import '../../../core/models/species.dart';
+import '../../../core/enums/observation_type.dart';
 import '../../../shared/widgets/app_drawer.dart';
 import '../bloc/species_list_bloc.dart';
+import '../../observation_list/bloc/observation_list_bloc.dart';
 import '../widgets/species_list_item.dart';
 
 class SpeciesListScreen extends StatelessWidget {
@@ -143,6 +145,30 @@ class _SpeciesListViewState extends State<_SpeciesListView> {
 
   @override
   Widget build(BuildContext context) {
+    final observations = context.select(
+      (ObservationListBloc bloc) => bloc.state.observations,
+    );
+    final currentYear = DateTime.now().year;
+    final yearlyObservedIds = <String>{};
+    final lifeObservedIds = <String>{};
+    final yardObservedIds = <String>{};
+
+    for (final observation in observations) {
+      switch (observation.type) {
+        case ObservationType.yearly:
+          if (observation.timestamp.year == currentYear) {
+            yearlyObservedIds.add(observation.species.id);
+          }
+          break;
+        case ObservationType.life:
+          lifeObservedIds.add(observation.species.id);
+          break;
+        case ObservationType.yard:
+          yardObservedIds.add(observation.species.id);
+          break;
+      }
+    }
+
     return Stack(
       children: [
         ListView.builder(
@@ -156,6 +182,9 @@ class _SpeciesListViewState extends State<_SpeciesListView> {
             return SpeciesListItem(
               species: item,
               selected: isSelected,
+              yearlyObserved: yearlyObservedIds.contains(item.id),
+              lifeObserved: lifeObservedIds.contains(item.id),
+              yardObserved: yardObservedIds.contains(item.id),
               onTap:
                   () => context.read<SpeciesListBloc>().add(
                     SpeciesSelectionToggled(item.id),

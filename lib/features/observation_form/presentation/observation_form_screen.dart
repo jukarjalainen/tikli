@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import '../../../core/enums/observation_type.dart';
 import '../../../core/models/species.dart';
 import '../bloc/observation_form_bloc.dart';
+import '../../species_list/bloc/species_list_bloc.dart';
 
 class ObservationFormScreen extends StatefulWidget {
   const ObservationFormScreen({super.key, required this.selectedSpecies});
@@ -32,6 +33,7 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status == ObservationFormStatus.success) {
+          context.read<SpeciesListBloc>().add(const SpeciesSelectionCleared());
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('Havainto tallennettu')));

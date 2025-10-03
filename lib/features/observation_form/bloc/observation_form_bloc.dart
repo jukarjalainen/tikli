@@ -99,8 +99,23 @@ class ObservationFormBloc
     }
     emit(state.copyWith(status: ObservationFormStatus.saving));
     try {
+      final lifeSpeciesIds =
+          _observationRepository
+              .getAll()
+              .where((observation) => observation.type == ObservationType.life)
+              .map((observation) => observation.species.id)
+              .toSet();
       for (final species in state.selectedSpecies) {
-        for (final type in state.selectedTypes) {
+        final typesToSave = Set<ObservationType>.from(state.selectedTypes);
+        final requiresLifeEntry =
+            (typesToSave.contains(ObservationType.yearly) ||
+                typesToSave.contains(ObservationType.yard)) &&
+            !typesToSave.contains(ObservationType.life) &&
+            !lifeSpeciesIds.contains(species.id);
+        if (requiresLifeEntry) {
+          typesToSave.add(ObservationType.life);
+        }
+        for (final type in typesToSave) {
           await _observationRepository.addObservation(
             species: species,
             type: type,
@@ -110,6 +125,9 @@ class ObservationFormBloc
                 state.address?.trim().isEmpty == true ? null : state.address,
             notes: state.notes?.trim().isEmpty == true ? null : state.notes,
           );
+          if (type == ObservationType.life) {
+            lifeSpeciesIds.add(species.id);
+          }
         }
       }
       emit(state.copyWith(status: ObservationFormStatus.success));

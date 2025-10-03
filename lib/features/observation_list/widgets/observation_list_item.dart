@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/enums/observation_type.dart';
 import '../../../core/models/observation.dart';
 
 class ObservationListItem extends StatelessWidget {
@@ -17,33 +16,36 @@ class ObservationListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final commonName = observation.species.commonName;
-    final initial = commonName.isNotEmpty ? commonName[0].toUpperCase() : '?';
-    final location = observation.address?.trim() ?? '';
+    final rawLocation = observation.address?.trim() ?? '';
+    final location =
+        rawLocation.isNotEmpty ? rawLocation : 'Paikkatieto puuttuu';
+    final metadataStyle = Theme.of(context).textTheme.bodySmall;
+
     return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: const Color(0xFF57BF32),
-        child: Text(
-          initial,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      title: Text(
-        commonName,
-        style: const TextStyle(fontWeight: FontWeight.w600),
-      ),
-      subtitle: Column(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(dateFormat.format(observation.timestamp)),
-          Text(location.isNotEmpty ? location : 'Paikkatieto puuttuu'),
+          Text(commonName, style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Text(
+                dateFormat.format(observation.timestamp),
+                style: metadataStyle,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  location,
+                  style: metadataStyle,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ],
-      ),
-      trailing: Text(
-        observation.type.label,
-        style: const TextStyle(color: Color(0xFF57BF32)),
       ),
     );
   }

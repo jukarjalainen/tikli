@@ -22,6 +22,12 @@ class SpeciesListItem extends StatelessWidget {
 
   static const _selectedColor = Color(0xFF57BF32);
 
+  // Constants matching shortcut positioning from species_list_screen.dart
+  static const double _shortcutRightMargin = 8.0;
+  static const double _shortcutButtonWidth = 32.0;
+  static const double _shortcutTotalWidth =
+      _shortcutRightMargin + _shortcutButtonWidth;
+
   @override
   Widget build(BuildContext context) {
     final textColor = selected ? Colors.white : Colors.black87;
@@ -32,7 +38,7 @@ class SpeciesListItem extends StatelessWidget {
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: Material(
         color: selected ? _selectedColor : Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -56,6 +62,9 @@ class SpeciesListItem extends StatelessWidget {
                 if (flags.isNotEmpty) ...[
                   const SizedBox(width: 12),
                   Wrap(spacing: 6, children: flags),
+                  SizedBox(
+                    width: _shortcutTotalWidth,
+                  ), // Margin relative to shortcuts
                 ],
               ],
             ),

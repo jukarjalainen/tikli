@@ -193,8 +193,8 @@ class _SpeciesListViewState extends State<_SpeciesListView> {
           },
         ),
         Positioned(
-          top: 0,
-          bottom: 0,
+          top: _topPadding,
+          bottom: 120, // Account for bottom button space
           right: 8,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

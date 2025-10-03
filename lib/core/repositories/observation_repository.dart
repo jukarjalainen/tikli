@@ -6,13 +6,19 @@ import 'package:latlong2/latlong.dart';
 import '../enums/observation_type.dart';
 import '../models/observation.dart';
 import '../models/species.dart';
+import '../services/reverse_geocoding_service.dart';
 
 class ObservationRepository {
-  ObservationRepository();
+  ObservationRepository({ReverseGeocodingService? geocodingService})
+    : _reverseGeocodingService = geocodingService ?? ReverseGeocodingService(),
+      _ownsGeocodingService = geocodingService == null;
 
   final List<Observation> _observations = [];
   final StreamController<List<Observation>> _controller =
       StreamController<List<Observation>>.broadcast();
+  final ReverseGeocodingService _reverseGeocodingService;
+  final bool _ownsGeocodingService;
+  final Map<String, String?> _reverseGeocodeCache = {};
 
   Stream<List<Observation>> watchAll() => _controller.stream;
 
@@ -26,6 +32,10 @@ class ObservationRepository {
     String? address,
     String? notes,
   }) async {
+    final locationDescription = await _resolveAddress(
+      position: position,
+      providedAddress: address,
+    );
     final id = _generateId(species.id, timestamp, type);
     final observation = Observation(
       id: id,
@@ -33,7 +43,7 @@ class ObservationRepository {
       type: type,
       timestamp: timestamp,
       position: position,
-      address: address,
+      address: locationDescription,
       notes: notes,
     );
     _observations.add(observation);
@@ -55,6 +65,38 @@ class ObservationRepository {
 
   void dispose() {
     _controller.close();
+    if (_ownsGeocodingService) {
+      _reverseGeocodingService.dispose();
+    }
+  }
+
+  Future<String?> _resolveAddress({
+    required LatLng position,
+    required String? providedAddress,
+  }) async {
+    if (providedAddress != null && providedAddress.trim().isNotEmpty) {
+      return providedAddress;
+    }
+
+    final cacheKey = _cacheKey(position);
+    if (_reverseGeocodeCache.containsKey(cacheKey)) {
+      return _reverseGeocodeCache[cacheKey];
+    }
+
+    try {
+      final description = await _reverseGeocodingService.lookupDescription(
+        position,
+      );
+      _reverseGeocodeCache[cacheKey] = description;
+      return description;
+    } catch (_) {
+      _reverseGeocodeCache[cacheKey] = null;
+      return null;
+    }
+  }
+
+  String _cacheKey(LatLng position) {
+    return '${position.latitude.toStringAsFixed(5)}:${position.longitude.toStringAsFixed(5)}';
   }
 
   void _notify() {

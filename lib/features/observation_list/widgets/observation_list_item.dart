@@ -18,6 +18,7 @@ class ObservationListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final commonName = observation.species.commonName;
     final initial = commonName.isNotEmpty ? commonName[0].toUpperCase() : '?';
+    final location = observation.address?.trim() ?? '';
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: const Color(0xFF57BF32),
@@ -37,10 +38,7 @@ class ObservationListItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(dateFormat.format(observation.timestamp)),
-          if (observation.address != null) Text(observation.address!),
-          Text(
-            'Lat ${observation.position.latitude.toStringAsFixed(4)}, Lng ${observation.position.longitude.toStringAsFixed(4)}',
-          ),
+          Text(location.isNotEmpty ? location : 'Paikkatieto puuttuu'),
         ],
       ),
       trailing: Text(

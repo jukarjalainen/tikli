@@ -138,10 +138,13 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.place),
-                      title: const Text('Koordinaatit'),
-                      subtitle: Text(
-                        'Lat ${state.position.latitude.toStringAsFixed(4)}, Lng ${state.position.longitude.toStringAsFixed(4)}',
-                      ),
+                      title: const Text('Paikkakunta'),
+                      subtitle: Text(() {
+                        final trimmed = state.address?.trim() ?? '';
+                        return trimmed.isNotEmpty
+                            ? trimmed
+                            : 'Paikkatieto puuttuu';
+                      }()),
                       trailing: TextButton(
                         onPressed:
                             () => _editCoordinates(context, state.position),

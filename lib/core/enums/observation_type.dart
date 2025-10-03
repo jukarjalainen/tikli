@@ -8,7 +8,7 @@ extension ObservationTypeTitle on ObservationType {
       case ObservationType.yard:
         return 'Pihapinna';
       case ObservationType.life:
-        return 'Elamanpinna';
+        return 'Elämänpinna';
     }
   }
 

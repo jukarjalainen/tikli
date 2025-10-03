@@ -30,7 +30,7 @@ class AppDrawer extends StatelessWidget {
             ListTile(
               selected: currentRoute == AppRoutes.speciesList,
               leading: const Icon(Icons.list_alt),
-              title: const Text('Lajilista'),
+              title: const Text('Lisää havainto'),
               onTap: () {
                 if (currentRoute != AppRoutes.speciesList) {
                   Navigator.of(

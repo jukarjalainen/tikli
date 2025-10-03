@@ -17,7 +17,7 @@ class SpeciesListScreen extends StatelessWidget {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Select species'),
+        title: const Text('Valitse lajit'),
         backgroundColor: const Color(0xFF56BF32),
       ),
       body: BlocBuilder<SpeciesListBloc, SpeciesListState>(

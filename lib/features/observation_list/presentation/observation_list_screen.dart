@@ -29,7 +29,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Observations'),
+        title: const Text('Pinnat'),
         backgroundColor: const Color(0xFF57BF32),
         actions: [
           IconButton(
@@ -62,7 +62,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                           child: DropdownButtonFormField<ObservationType>(
                             initialValue: filter,
                             decoration: const InputDecoration(
-                              labelText: 'List type',
+                              labelText: 'Pinnatyyppi',
                             ),
                             items:
                                 ObservationType.values
@@ -87,7 +87,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                             child: DropdownButtonFormField<int>(
                               initialValue: state.selectedYear,
                               decoration: const InputDecoration(
-                                labelText: 'Year',
+                                labelText: 'Vuosi',
                               ),
                               items:
                                   state.availableYears
@@ -178,7 +178,7 @@ class _ObservationCountBadge extends StatelessWidget {
         border: Border.all(color: primary.withOpacity(0.4)),
       ),
       child: Text(
-        'Total: $count',
+        'Yhteensä: $count',
         style: theme.textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w600,
           color: primary,

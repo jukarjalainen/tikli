@@ -55,7 +55,7 @@ class SpeciesListScreen extends StatelessWidget {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Choose'),
+                child: const Text('Seuraava'),
               ),
             ),
           );
@@ -71,7 +71,7 @@ class SpeciesListScreen extends StatelessWidget {
             .toList();
     if (selected.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Choose ainakin yksi laji.')),
+        const SnackBar(content: Text('Valitse ainakin yksi laji.')),
       );
       return;
     }

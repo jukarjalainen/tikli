@@ -53,57 +53,69 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: DropdownButtonFormField<ObservationType>(
-                        initialValue: filter,
-                        decoration: const InputDecoration(
-                          labelText: 'List type',
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<ObservationType>(
+                            initialValue: filter,
+                            decoration: const InputDecoration(
+                              labelText: 'List type',
+                            ),
+                            items:
+                                ObservationType.values
+                                    .map(
+                                      (type) => DropdownMenuItem(
+                                        value: type,
+                                        child: Text(type.label),
+                                      ),
+                                    )
+                                    .toList(),
+                            onChanged: (value) {
+                              if (value == null) return;
+                              context.read<ObservationListBloc>().add(
+                                ObservationListFilterChanged(value),
+                              );
+                            },
+                          ),
                         ),
-                        items:
-                            ObservationType.values
-                                .map(
-                                  (type) => DropdownMenuItem(
-                                    value: type,
-                                    child: Text(type.label),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (value) {
-                          if (value == null) return;
-                          context.read<ObservationListBloc>().add(
-                            ObservationListFilterChanged(value),
-                          );
-                        },
-                      ),
-                    ),
-                    if (filter == ObservationType.yearly) ...[
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: DropdownButtonFormField<int>(
-                          initialValue: state.selectedYear,
-                          decoration: const InputDecoration(labelText: 'Year'),
-                          items:
-                              state.availableYears
-                                  .map(
-                                    (year) => DropdownMenuItem(
-                                      value: year,
-                                      child: Text(year.toString()),
-                                    ),
-                                  )
-                                  .toList(),
-                          onChanged: (value) {
-                            context.read<ObservationListBloc>().add(
-                              ObservationListFilterChanged(
-                                ObservationType.yearly,
-                                year: value,
+                        if (filter == ObservationType.yearly) ...[
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                              initialValue: state.selectedYear,
+                              decoration: const InputDecoration(
+                                labelText: 'Year',
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                              items:
+                                  state.availableYears
+                                      .map(
+                                        (year) => DropdownMenuItem(
+                                          value: year,
+                                          child: Text(year.toString()),
+                                        ),
+                                      )
+                                      .toList(),
+                              onChanged: (value) {
+                                context.read<ObservationListBloc>().add(
+                                  ObservationListFilterChanged(
+                                    ObservationType.yearly,
+                                    year: value,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: _ObservationCountBadge(count: observations.length),
+                    ),
                   ],
                 ),
               ),
@@ -144,6 +156,33 @@ class _EmptyState extends StatelessWidget {
           SizedBox(height: 8),
           Text('No observations for this filter'),
         ],
+      ),
+    );
+  }
+}
+
+class _ObservationCountBadge extends StatelessWidget {
+  const _ObservationCountBadge({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: primary.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primary.withOpacity(0.4)),
+      ),
+      child: Text(
+        'Total: $count',
+        style: theme.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: primary,
+        ),
       ),
     );
   }

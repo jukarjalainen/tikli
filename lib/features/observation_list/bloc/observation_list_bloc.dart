@@ -98,16 +98,26 @@ class ObservationListBloc
     ObservationType type,
     int? year,
   ) {
-    return observations.where((observation) {
+    final filtered = <Observation>[];
+    final seenSpeciesIds = <String>{};
+    for (final observation in observations) {
       if (observation.type != type) {
-        return false;
+        continue;
       }
       if (type == ObservationType.yearly) {
         final targetYear = year ?? DateTime.now().year;
-        return observation.timestamp.year == targetYear;
+        if (observation.timestamp.year != targetYear) {
+          continue;
+        }
       }
-      return true;
-    }).toList();
+      final speciesId = observation.species.id;
+      if (seenSpeciesIds.contains(speciesId)) {
+        continue;
+      }
+      seenSpeciesIds.add(speciesId);
+      filtered.add(observation);
+    }
+    return filtered;
   }
 
   @override

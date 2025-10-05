@@ -5,6 +5,7 @@ import 'app_router.dart';
 import 'core/constants/app_routes.dart';
 import 'core/repositories/observation_repository.dart';
 import 'core/repositories/species_repository.dart';
+import 'core/services/location_permission_service.dart';
 import 'features/observation_list/bloc/observation_list_bloc.dart';
 import 'features/species_list/bloc/species_list_bloc.dart';
 
@@ -24,11 +25,16 @@ class TikliApp extends StatefulWidget {
 
 class _TikliAppState extends State<TikliApp> {
   late final AppRouter _router;
+  late final LocationPermissionService _locationPermissionService;
 
   @override
   void initState() {
     super.initState();
     _router = AppRouter(observationRepository: widget.observationRepository);
+    _locationPermissionService = LocationPermissionService();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _locationPermissionService.ensurePermission();
+    });
   }
 
   @override

@@ -18,6 +18,18 @@ class ObservationListScreen extends StatefulWidget {
 class _ObservationListScreenState extends State<ObservationListScreen> {
   late final DateFormat _dateFormat;
 
+  String _titleForType(ObservationType type) {
+    switch (type) {
+      case ObservationType.yearly:
+        return 'Vuodenpinnat';
+      case ObservationType.life:
+        return 'Elämänpinnat';
+      case ObservationType.yard:
+        return 'Pihapinnat';
+    }
+    return 'Pinnat';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -29,7 +41,13 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Pinnat'),
+        title: BlocBuilder<ObservationListBloc, ObservationListState>(
+          buildWhen:
+              (previous, current) => previous.filterType != current.filterType,
+          builder: (context, state) {
+            return Text(_titleForType(state.filterType));
+          },
+        ),
         backgroundColor: const Color(0xFF57BF32),
         actions: [
           IconButton(

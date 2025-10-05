@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/models/species.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class SpeciesListItem extends StatelessWidget {
   const SpeciesListItem({
@@ -32,9 +33,9 @@ class SpeciesListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final textColor = selected ? Colors.white : Colors.black87;
     final flags = <Widget>[
-      if (yearlyObserved) _buildFlag('V'),
-      if (lifeObserved) _buildFlag('E'),
-      if (yardObserved) _buildFlag('P'),
+      if (yearlyObserved) _buildBinocularFlag('V'),
+      if (lifeObserved) _buildStarFlag('E'),
+      if (yardObserved) _buildHouseFlag('P'),
     ];
 
     return Padding(
@@ -74,7 +75,76 @@ class SpeciesListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildFlag(String label) {
+  Widget _buildBinocularFlag(String label) {
+    final bodyColor = selected ? Colors.white : const Color(0xFFA5D6A7);
+    final accentColor = selected ? _selectedColor : const Color(0xFF1B5E20);
+    return SizedBox(
+      width: 28,
+      height: 28,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(MdiIcons.binoculars, color: bodyColor, size: 24),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              color: accentColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStarFlag(String label) {
+    final starColor = selected ? Colors.white : const Color(0xFFFFD54F);
+    final letterColor = selected ? _selectedColor : const Color(0xFF8D6E63);
+    return SizedBox(
+      width: 28,
+      height: 28,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(Icons.star_rounded, color: starColor, size: 26),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              color: letterColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHouseFlag(String label) {
+    final houseColor = selected ? Colors.white : const Color(0xFFD7E9FF);
+    final letterColor = selected ? _selectedColor : const Color(0xFF1E88E5);
+    return SizedBox(
+      width: 28,
+      height: 28,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(Icons.house_rounded, color: houseColor, size: 24),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              color: letterColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCircleFlag(String label) {
     final backgroundColor =
         selected ? Colors.white.withOpacity(0.2) : const Color(0xFFE6F2E2);
     final borderColor =

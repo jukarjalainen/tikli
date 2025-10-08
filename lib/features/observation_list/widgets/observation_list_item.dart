@@ -18,7 +18,7 @@ class ObservationListItem extends StatelessWidget {
     final commonName = observation.species.commonName;
     final rawLocation = observation.address?.trim() ?? '';
     final location =
-        rawLocation.isNotEmpty ? rawLocation : 'Paikkatieto puuttuu';
+        rawLocation.isNotEmpty ? rawLocation : '';
     final metadataStyle = Theme.of(context).textTheme.bodySmall;
 
     return ListTile(
@@ -32,7 +32,9 @@ class ObservationListItem extends StatelessWidget {
           Row(
             children: [
               Text(
-                dateFormat.format(observation.timestamp),
+                observation.timestamp != null
+                    ? dateFormat.format(observation.timestamp!)
+                    : '',
                 style: metadataStyle,
               ),
               const SizedBox(width: 12),

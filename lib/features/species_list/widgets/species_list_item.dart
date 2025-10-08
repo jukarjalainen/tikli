@@ -143,31 +143,4 @@ class SpeciesListItem extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildCircleFlag(String label) {
-    final backgroundColor =
-        selected ? Colors.white.withOpacity(0.2) : const Color(0xFFE6F2E2);
-    final borderColor =
-        selected ? Colors.white.withOpacity(0.4) : const Color(0xFFB7D8AF);
-    final flagTextColor = selected ? Colors.white : _selectedColor;
-
-    return Container(
-      width: 24,
-      height: 24,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        label,
-        style: TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 12,
-          color: flagTextColor,
-        ),
-      ),
-    );
-  }
 }

@@ -46,12 +46,16 @@ class ObservationListBloc
         final yearlyObservations =
             event.observations
                 .where(
-                  (observation) => observation.type == ObservationType.yearly,
+                  (observation) =>
+                      observation.type == ObservationType.yearly &&
+                      observation.timestamp != null,
                 )
                 .toList();
         if (yearlyObservations.isNotEmpty) {
-          yearlyObservations.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-          targetYear = yearlyObservations.first.timestamp.year;
+          yearlyObservations.sort(
+            (a, b) => b.timestamp!.compareTo(a.timestamp!),
+          );
+          targetYear = yearlyObservations.first.timestamp!.year;
         } else {
           targetYear = DateTime.now().year;
         }
@@ -105,8 +109,11 @@ class ObservationListBloc
         continue;
       }
       if (type == ObservationType.yearly) {
+        if (observation.timestamp == null) {
+          continue; // Skip yearly observations without timestamp
+        }
         final targetYear = year ?? DateTime.now().year;
-        if (observation.timestamp.year != targetYear) {
+        if (observation.timestamp!.year != targetYear) {
           continue;
         }
       }

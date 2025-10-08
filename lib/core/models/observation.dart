@@ -9,8 +9,8 @@ class Observation extends Equatable {
     required this.id,
     required this.species,
     required this.type,
-    required this.timestamp,
-    required this.position,
+    this.timestamp,
+    this.position,
     this.notes,
     this.address,
   });
@@ -18,8 +18,8 @@ class Observation extends Equatable {
   final String id;
   final Species species;
   final ObservationType type;
-  final DateTime timestamp;
-  final LatLng position;
+  final DateTime? timestamp;
+  final LatLng? position;
   final String? address;
   final String? notes;
 

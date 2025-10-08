@@ -17,14 +17,16 @@ class ObservationMapScreen extends StatelessWidget {
       ),
       body: BlocBuilder<ObservationListBloc, ObservationListState>(
         builder: (context, state) {
-          if (state.observations.isEmpty) {
+          final observationsWithPosition =
+              state.observations.where((obs) => obs.position != null).toList();
+          if (observationsWithPosition.isEmpty) {
             return const Center(child: Text('Ei havaintoja kartalla.'));
           }
           final markers =
-              state.observations
+              observationsWithPosition
                   .map(
                     (observation) => Marker(
-                      point: observation.position,
+                      point: observation.position!,
                       width: 80,
                       height: 40,
                       child: Column(

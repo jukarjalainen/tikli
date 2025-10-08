@@ -144,7 +144,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                   pageType == ObservationType.yearly
                       ? pageObservations
                           .where(
-                            (obs) => obs.timestamp.year == state.selectedYear,
+                            (obs) => obs.timestamp?.year == state.selectedYear,
                           )
                           .toList()
                       : pageObservations;

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../../core/enums/observation_type.dart';
 import '../../../core/models/species.dart';
@@ -103,12 +104,32 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.calendar_today),
                       title: const Text('Havaintoaika'),
-                      subtitle: Text(_dateFormat.format(state.timestamp)),
+                      subtitle: Text(
+                        state.timestamp != null
+                            ? _dateFormat.format(state.timestamp!)
+                            : 'Ei asetettu',
+                      ),
+                      trailing:
+                          state.timestamp != null
+                              ? IconButton(
+                                icon: Icon(
+                                  MdiIcons.trashCan,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () {
+                                  context.read<ObservationFormBloc>().add(
+                                    const ObservationFormTimestampCleared(),
+                                  );
+                                },
+                                tooltip: 'Tyhjennä',
+                              )
+                              : null,
                       onTap: () async {
                         final bloc = context.read<ObservationFormBloc>();
+                        final initialDate = state.timestamp ?? DateTime.now();
                         final pickedDate = await showDatePicker(
                           context: context,
-                          initialDate: state.timestamp,
+                          initialDate: initialDate,
                           firstDate: DateTime(2000),
                           lastDate: DateTime.now().add(
                             const Duration(days: 365),
@@ -119,7 +140,7 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                         }
                         final pickedTime = await showTimePicker(
                           context: context,
-                          initialTime: TimeOfDay.fromDateTime(state.timestamp),
+                          initialTime: TimeOfDay.fromDateTime(initialDate),
                         );
                         if (!context.mounted) {
                           return;
@@ -128,8 +149,8 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                           pickedDate.year,
                           pickedDate.month,
                           pickedDate.day,
-                          pickedTime?.hour ?? state.timestamp.hour,
-                          pickedTime?.minute ?? state.timestamp.minute,
+                          pickedTime?.hour ?? initialDate.hour,
+                          pickedTime?.minute ?? initialDate.minute,
                         );
                         bloc.add(ObservationFormTimestampChanged(newDateTime));
                       },
@@ -140,15 +161,45 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                       leading: const Icon(Icons.place),
                       title: const Text('Paikkakunta'),
                       subtitle: Text(() {
+                        if (state.position == null) {
+                          return 'Ei asetettu';
+                        }
                         final trimmed = state.address?.trim() ?? '';
                         return trimmed.isNotEmpty
                             ? trimmed
-                            : 'Paikkatieto puuttuu';
+                            : '';
                       }()),
-                      trailing: TextButton(
-                        onPressed:
-                            () => _editCoordinates(context, state.position),
-                        child: const Text('Editoi'),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (state.position != null) ...[
+                            IconButton(
+                              icon: Icon(MdiIcons.trashCan, color: Colors.red),
+                              onPressed: () {
+                                context.read<ObservationFormBloc>().add(
+                                  const ObservationFormLocationCleared(),
+                                );
+                              },
+                              tooltip: 'Tyhjennä',
+                            ),
+                            TextButton(
+                              onPressed:
+                                  () => _editCoordinates(
+                                    context,
+                                    state.position!,
+                                  ),
+                              child: const Text('Editoi'),
+                            ),
+                          ] else
+                            TextButton(
+                              onPressed:
+                                  () => _editCoordinates(
+                                    context,
+                                    const LatLng(60.1699, 24.9384),
+                                  ),
+                              child: const Text('Aseta'),
+                            ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -177,43 +228,45 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                           ),
                     ),
                     const SizedBox(height: 16),
-                    AspectRatio(
-                      aspectRatio: 3 / 2,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: FlutterMap(
-                          options: MapOptions(
-                            initialCenter: state.position,
-                            initialZoom: 12,
-                            interactionOptions: const InteractionOptions(
-                              flags:
-                                  InteractiveFlag.all & ~InteractiveFlag.rotate,
+                    if (state.position != null)
+                      AspectRatio(
+                        aspectRatio: 3 / 2,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: FlutterMap(
+                            options: MapOptions(
+                              initialCenter: state.position!,
+                              initialZoom: 12,
+                              interactionOptions: const InteractionOptions(
+                                flags:
+                                    InteractiveFlag.all &
+                                    ~InteractiveFlag.rotate,
+                              ),
                             ),
-                          ),
-                          children: [
-                            TileLayer(
-                              urlTemplate:
-                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'fi.tikli.app',
-                            ),
-                            MarkerLayer(
-                              markers: [
-                                Marker(
-                                  point: state.position,
-                                  width: 40,
-                                  height: 40,
-                                  child: const Icon(
-                                    Icons.location_pin,
-                                    color: Colors.red,
-                                    size: 40,
+                            children: [
+                              TileLayer(
+                                urlTemplate:
+                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                userAgentPackageName: 'fi.tikli.app',
+                              ),
+                              MarkerLayer(
+                                markers: [
+                                  Marker(
+                                    point: state.position!,
+                                    width: 40,
+                                    height: 40,
+                                    child: const Icon(
+                                      Icons.location_pin,
+                                      color: Colors.red,
+                                      size: 40,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),

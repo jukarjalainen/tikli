@@ -43,7 +43,8 @@ class ObservationListState extends Equatable {
     final years =
         observations
             .where((observation) => observation.type == ObservationType.yearly)
-            .map((observation) => observation.timestamp.year)
+            .where((observation) => observation.timestamp != null)
+            .map((observation) => observation.timestamp!.year)
             .toSet()
             .toList()
           ..sort((a, b) => b.compareTo(a));

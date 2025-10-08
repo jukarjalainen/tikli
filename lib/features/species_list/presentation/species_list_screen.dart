@@ -165,7 +165,7 @@ class _SpeciesListViewState extends State<_SpeciesListView> {
     for (final observation in observations) {
       switch (observation.type) {
         case ObservationType.yearly:
-          if (observation.timestamp.year == currentYear) {
+          if (observation.timestamp?.year == currentYear) {
             yearlyObservedIds.add(observation.species.id);
           }
           break;

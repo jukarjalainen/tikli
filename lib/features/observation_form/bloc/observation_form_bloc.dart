@@ -26,7 +26,9 @@ class ObservationFormBloc
        ) {
     on<ObservationTypeToggled>(_onTypeToggled);
     on<ObservationFormTimestampChanged>(_onTimestampChanged);
+    on<ObservationFormTimestampCleared>(_onTimestampCleared);
     on<ObservationFormLocationChanged>(_onLocationChanged);
+    on<ObservationFormLocationCleared>(_onLocationCleared);
     on<ObservationFormAddressChanged>(_onAddressChanged);
     on<ObservationFormNotesChanged>(_onNotesChanged);
     on<ObservationFormSubmitted>(_onSubmitted);
@@ -54,11 +56,25 @@ class ObservationFormBloc
     emit(state.copyWith(timestamp: event.timestamp));
   }
 
+  void _onTimestampCleared(
+    ObservationFormTimestampCleared event,
+    Emitter<ObservationFormState> emit,
+  ) {
+    emit(state.copyWith(clearTimestamp: true));
+  }
+
   void _onLocationChanged(
     ObservationFormLocationChanged event,
     Emitter<ObservationFormState> emit,
   ) {
     emit(state.copyWith(position: event.position));
+  }
+
+  void _onLocationCleared(
+    ObservationFormLocationCleared event,
+    Emitter<ObservationFormState> emit,
+  ) {
+    emit(state.copyWith(clearPosition: true, clearAddress: true));
   }
 
   void _onAddressChanged(
@@ -97,6 +113,19 @@ class ObservationFormBloc
       );
       return;
     }
+
+    // Validate: yearly observations require a timestamp
+    if (state.selectedTypes.contains(ObservationType.yearly) &&
+        state.timestamp == null) {
+      emit(
+        state.copyWith(
+          status: ObservationFormStatus.failure,
+          errorMessage: 'Vuodenpinnat vaativat havaintoajan.',
+        ),
+      );
+      return;
+    }
+
     emit(state.copyWith(status: ObservationFormStatus.saving));
     try {
       final lifeSpeciesIds =

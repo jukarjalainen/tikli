@@ -52,6 +52,14 @@ class ObservationFormNotesChanged extends ObservationFormEvent {
   List<Object?> get props => [notes];
 }
 
+class ObservationFormTimestampCleared extends ObservationFormEvent {
+  const ObservationFormTimestampCleared();
+}
+
+class ObservationFormLocationCleared extends ObservationFormEvent {
+  const ObservationFormLocationCleared();
+}
+
 class ObservationFormSubmitted extends ObservationFormEvent {
   const ObservationFormSubmitted();
 }

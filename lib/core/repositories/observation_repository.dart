@@ -27,16 +27,19 @@ class ObservationRepository {
   Future<void> addObservation({
     required Species species,
     required ObservationType type,
-    required DateTime timestamp,
-    required LatLng position,
+    DateTime? timestamp,
+    LatLng? position,
     String? address,
     String? notes,
   }) async {
-    final locationDescription = await _resolveAddress(
-      position: position,
-      providedAddress: address,
-    );
-    final id = _generateId(species.id, timestamp, type);
+    final locationDescription =
+        position != null
+            ? await _resolveAddress(
+              position: position,
+              providedAddress: address,
+            )
+            : address;
+    final id = _generateId(species.id, timestamp ?? DateTime.now(), type);
     final observation = Observation(
       id: id,
       species: species,
@@ -57,7 +60,8 @@ class ObservationRepository {
             : _observations.where((obs) => obs.type == type);
     final map = <int, List<Observation>>{};
     for (final observation in observations) {
-      final year = observation.timestamp.year;
+      if (observation.timestamp == null) continue;
+      final year = observation.timestamp!.year;
       map.putIfAbsent(year, () => <Observation>[]).add(observation);
     }
     return SplayTreeMap.of(map, (a, b) => b.compareTo(a));
@@ -100,7 +104,11 @@ class ObservationRepository {
   }
 
   void _notify() {
-    _observations.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    _observations.sort((a, b) {
+      final aTime = a.timestamp ?? DateTime(1970);
+      final bTime = b.timestamp ?? DateTime(1970);
+      return bTime.compareTo(aTime);
+    });
     _controller.add(List.unmodifiable(_observations));
   }
 

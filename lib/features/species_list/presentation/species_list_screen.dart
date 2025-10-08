@@ -267,6 +267,7 @@ class _ShortcutButton extends StatelessWidget {
     final backgroundColor =
         enabled ? const Color(0xFF57BF32) : Colors.grey[300];
     final textColor = enabled ? Colors.white : Colors.grey[600];
+    final borderColor = enabled ? const Color(0xFF2E7D32) : Colors.grey[400];
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -278,6 +279,7 @@ class _ShortcutButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: backgroundColor,
             shape: BoxShape.circle,
+            border: Border.all(color: borderColor!, width: 1.5),
           ),
           child: Center(
             child: Text(

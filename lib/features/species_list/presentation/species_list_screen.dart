@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/models/species.dart';
 import '../../../core/enums/observation_type.dart';
-import '../../../shared/widgets/app_drawer.dart';
+import '../../../shared/widgets/binoculars_icon.dart';
 import '../bloc/species_list_bloc.dart';
 import '../../observation_list/bloc/observation_list_bloc.dart';
 import '../widgets/species_list_item.dart';
@@ -15,10 +15,19 @@ class SpeciesListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('Valitse lajit'),
         backgroundColor: const Color(0xFF56BF32),
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const BinocularsIcon(showStar: true),
+          onPressed: () {
+            Navigator.of(
+              context,
+            ).pushReplacementNamed(AppRoutes.observationList);
+          },
+          tooltip: 'Siirry pinnoihin',
+        ),
       ),
       body: BlocBuilder<SpeciesListBloc, SpeciesListState>(
         builder: (context, state) {

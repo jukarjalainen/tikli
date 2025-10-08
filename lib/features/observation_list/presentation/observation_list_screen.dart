@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_routes.dart';
 import '../../../core/enums/observation_type.dart';
-import '../../../shared/widgets/app_drawer.dart';
+import '../../../shared/widgets/binoculars_icon.dart';
 import '../bloc/observation_list_bloc.dart';
 import '../widgets/observation_list_item.dart';
 
@@ -39,7 +39,6 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const AppDrawer(),
       appBar: AppBar(
         title: BlocBuilder<ObservationListBloc, ObservationListState>(
           buildWhen:
@@ -49,6 +48,14 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
           },
         ),
         backgroundColor: const Color(0xFF57BF32),
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const BinocularsIcon(showStar: false),
+          onPressed: () {
+            Navigator.of(context).pushReplacementNamed(AppRoutes.speciesList);
+          },
+          tooltip: 'Lisää havainto',
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.map_outlined),

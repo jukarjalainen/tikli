@@ -20,11 +20,19 @@ class ObservationMapScreen extends StatelessWidget {
           if (state.observations.isEmpty) {
             return const Center(child: Text('Ei havaintoja kartalla.'));
           }
-          final markers =
+          // Filter out observations without position
+          final observationsWithPosition =
               state.observations
+                  .where((observation) => observation.position != null)
+                  .toList();
+          if (observationsWithPosition.isEmpty) {
+            return const Center(child: Text('Ei sijaintitietoja kartalla.'));
+          }
+          final markers =
+              observationsWithPosition
                   .map(
                     (observation) => Marker(
-                      point: observation.position,
+                      point: observation.position!,
                       width: 80,
                       height: 40,
                       child: Column(

@@ -17,6 +17,11 @@ class ObservationListScreen extends StatefulWidget {
 
 class _ObservationListScreenState extends State<ObservationListScreen> {
   late final DateFormat _dateFormat;
+  late final PageController _pageController;
+
+  // Large number to simulate infinite scrolling
+  static const int _virtualPageCount = 10000;
+  static const int _typeCount = 3; // ObservationType.values.length
 
   String _titleForType(ObservationType type) {
     switch (type) {
@@ -30,10 +35,33 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
     return 'Pinnat';
   }
 
+  int _getPageIndexForType(ObservationType type) {
+    return ObservationType.values.indexOf(type);
+  }
+
+  ObservationType _getTypeForPageIndex(int index) {
+    // Use modulo to wrap around the observation types
+    final actualIndex = index % _typeCount;
+    return ObservationType.values[actualIndex];
+  }
+
   @override
   void initState() {
     super.initState();
     _dateFormat = DateFormat('d.M.yyyy HH:mm');
+    final initialType = context.read<ObservationListBloc>().state.filterType;
+    final initialTypeIndex = _getPageIndexForType(initialType);
+
+    // Start in the middle to allow swiping in both directions
+    _pageController = PageController(
+      initialPage: (_virtualPageCount ~/ 2) + initialTypeIndex,
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -70,97 +98,150 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final filter = state.filterType;
-          final observations = state.visibleObservations;
+          // Sync PageController with current filter type when changed via dropdown
+          if (_pageController.hasClients) {
+            final currentPage = _pageController.page?.round() ?? 0;
+            final currentType = _getTypeForPageIndex(currentPage);
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+            if (currentType != state.filterType) {
+              final targetTypeIndex = _getPageIndexForType(state.filterType);
+              final currentPageBase = currentPage - (currentPage % _typeCount);
+              final targetPage = currentPageBase + targetTypeIndex;
+
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _pageController.animateToPage(
+                  targetPage,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              });
+            }
+          }
+
+          return PageView.builder(
+            controller: _pageController,
+            itemCount: _virtualPageCount,
+            onPageChanged: (index) {
+              final newType = _getTypeForPageIndex(index);
+              if (newType != state.filterType) {
+                context.read<ObservationListBloc>().add(
+                  ObservationListFilterChanged(newType),
+                );
+              }
+            },
+            itemBuilder: (context, pageIndex) {
+              final pageType = _getTypeForPageIndex(pageIndex);
+
+              // Get observations for this page's type
+              final bloc = context.read<ObservationListBloc>();
+              final pageObservations =
+                  bloc.state.observations
+                      .where((obs) => obs.type == pageType)
+                      .toList();
+
+              // For yearly, filter by selected year
+              final displayObservations =
+                  pageType == ObservationType.yearly
+                      ? pageObservations
+                          .where(
+                            (obs) => obs.timestamp.year == state.selectedYear,
+                          )
+                          .toList()
+                      : pageObservations;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: DropdownButtonFormField<ObservationType>(
-                            initialValue: filter,
-                            decoration: const InputDecoration(
-                              labelText: 'Pinnatyyppi',
+                        Row(
+                          children: [
+                            Expanded(
+                              child: DropdownButtonFormField<ObservationType>(
+                                value: state.filterType,
+                                decoration: const InputDecoration(
+                                  labelText: 'Pinnatyyppi',
+                                ),
+                                items:
+                                    ObservationType.values
+                                        .map(
+                                          (type) => DropdownMenuItem(
+                                            value: type,
+                                            child: Text(type.label),
+                                          ),
+                                        )
+                                        .toList(),
+                                onChanged: (value) {
+                                  if (value == null) return;
+                                  context.read<ObservationListBloc>().add(
+                                    ObservationListFilterChanged(value),
+                                  );
+                                },
+                              ),
                             ),
-                            items:
-                                ObservationType.values
-                                    .map(
-                                      (type) => DropdownMenuItem(
-                                        value: type,
-                                        child: Text(type.label),
+                            if (state.filterType == ObservationType.yearly) ...[
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: DropdownButtonFormField<int>(
+                                  value: state.selectedYear,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Vuosi',
+                                  ),
+                                  items:
+                                      state.availableYears
+                                          .map(
+                                            (year) => DropdownMenuItem(
+                                              value: year,
+                                              child: Text(year.toString()),
+                                            ),
+                                          )
+                                          .toList(),
+                                  onChanged: (value) {
+                                    context.read<ObservationListBloc>().add(
+                                      ObservationListFilterChanged(
+                                        ObservationType.yearly,
+                                        year: value,
                                       ),
-                                    )
-                                    .toList(),
-                            onChanged: (value) {
-                              if (value == null) return;
-                              context.read<ObservationListBloc>().add(
-                                ObservationListFilterChanged(value),
-                              );
-                            },
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: _ObservationCountBadge(
+                            count: displayObservations.length,
                           ),
                         ),
-                        if (filter == ObservationType.yearly) ...[
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: DropdownButtonFormField<int>(
-                              initialValue: state.selectedYear,
-                              decoration: const InputDecoration(
-                                labelText: 'Vuosi',
-                              ),
-                              items:
-                                  state.availableYears
-                                      .map(
-                                        (year) => DropdownMenuItem(
-                                          value: year,
-                                          child: Text(year.toString()),
-                                        ),
-                                      )
-                                      .toList(),
-                              onChanged: (value) {
-                                context.read<ObservationListBloc>().add(
-                                  ObservationListFilterChanged(
-                                    ObservationType.yearly,
-                                    year: value,
-                                  ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child:
+                        displayObservations.isEmpty
+                            ? const _EmptyState()
+                            : ListView.separated(
+                              itemCount: displayObservations.length,
+                              separatorBuilder:
+                                  (_, __) => const Divider(height: 1),
+                              itemBuilder: (context, index) {
+                                final observation = displayObservations[index];
+                                return ObservationListItem(
+                                  observation: observation,
+                                  dateFormat: _dateFormat,
                                 );
                               },
                             ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: _ObservationCountBadge(count: observations.length),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child:
-                    observations.isEmpty
-                        ? const _EmptyState()
-                        : ListView.separated(
-                          itemCount: observations.length,
-                          separatorBuilder: (_, __) => const Divider(height: 1),
-                          itemBuilder: (context, index) {
-                            final observation = observations[index];
-                            return ObservationListItem(
-                              observation: observation,
-                              dateFormat: _dateFormat,
-                            );
-                          },
-                        ),
-              ),
-            ],
+                  ),
+                ],
+              );
+            },
           );
         },
       ),

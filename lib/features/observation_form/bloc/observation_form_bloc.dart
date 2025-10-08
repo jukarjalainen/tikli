@@ -20,13 +20,15 @@ class ObservationFormBloc
        super(
          ObservationFormState(
            selectedSpecies: selectedSpecies,
-           position: initialPosition ?? const LatLng(60.1699, 24.9384),
-           timestamp: initialTimestamp ?? DateTime.now(),
+           position: initialPosition,
+           timestamp: initialTimestamp,
          ),
        ) {
     on<ObservationTypeToggled>(_onTypeToggled);
     on<ObservationFormTimestampChanged>(_onTimestampChanged);
+    on<ObservationFormTimestampCleared>(_onTimestampCleared);
     on<ObservationFormLocationChanged>(_onLocationChanged);
+    on<ObservationFormLocationCleared>(_onLocationCleared);
     on<ObservationFormAddressChanged>(_onAddressChanged);
     on<ObservationFormNotesChanged>(_onNotesChanged);
     on<ObservationFormSubmitted>(_onSubmitted);
@@ -54,11 +56,25 @@ class ObservationFormBloc
     emit(state.copyWith(timestamp: event.timestamp));
   }
 
+  void _onTimestampCleared(
+    ObservationFormTimestampCleared event,
+    Emitter<ObservationFormState> emit,
+  ) {
+    emit(state.copyWith(clearTimestamp: true));
+  }
+
   void _onLocationChanged(
     ObservationFormLocationChanged event,
     Emitter<ObservationFormState> emit,
   ) {
     emit(state.copyWith(position: event.position));
+  }
+
+  void _onLocationCleared(
+    ObservationFormLocationCleared event,
+    Emitter<ObservationFormState> emit,
+  ) {
+    emit(state.copyWith(clearPosition: true, clearAddress: true));
   }
 
   void _onAddressChanged(
@@ -97,6 +113,18 @@ class ObservationFormBloc
       );
       return;
     }
+    // Validate that yearly observations require a timestamp
+    if (state.selectedTypes.contains(ObservationType.yearly) &&
+        state.timestamp == null) {
+      emit(
+        state.copyWith(
+          status: ObservationFormStatus.failure,
+          errorMessage:
+              'Vuodenpinna-havainnot vaativat päivämäärän. Lisää päivämäärä tai poista Vuodenpinna valinta.',
+        ),
+      );
+      return;
+    }
     emit(state.copyWith(status: ObservationFormStatus.saving));
     try {
       final lifeSpeciesIds =
@@ -119,8 +147,8 @@ class ObservationFormBloc
           await _observationRepository.addObservation(
             species: species,
             type: type,
-            timestamp: state.timestamp,
-            position: state.position,
+            timestamp: state.timestamp ?? DateTime.now(),
+            position: state.position ?? const LatLng(60.1699, 24.9384),
             address:
                 state.address?.trim().isEmpty == true ? null : state.address,
             notes: state.notes?.trim().isEmpty == true ? null : state.notes,

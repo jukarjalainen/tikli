@@ -5,8 +5,8 @@ enum ObservationFormStatus { editing, saving, success, failure }
 class ObservationFormState extends Equatable {
   ObservationFormState({
     required List<Species> selectedSpecies,
-    required this.position,
-    required this.timestamp,
+    this.position,
+    this.timestamp,
     Set<ObservationType>? selectedTypes,
     this.address,
     this.notes,
@@ -17,8 +17,8 @@ class ObservationFormState extends Equatable {
 
   final List<Species> selectedSpecies;
   final Set<ObservationType> selectedTypes;
-  final LatLng position;
-  final DateTime timestamp;
+  final LatLng? position;
+  final DateTime? timestamp;
   final String? address;
   final String? notes;
   final ObservationFormStatus status;
@@ -28,7 +28,9 @@ class ObservationFormState extends Equatable {
     List<Species>? selectedSpecies,
     Set<ObservationType>? selectedTypes,
     LatLng? position,
+    bool clearPosition = false,
     DateTime? timestamp,
+    bool clearTimestamp = false,
     String? address,
     bool clearAddress = false,
     String? notes,
@@ -42,8 +44,8 @@ class ObservationFormState extends Equatable {
               ? List<Species>.unmodifiable(selectedSpecies)
               : this.selectedSpecies,
       selectedTypes: selectedTypes ?? this.selectedTypes,
-      position: position ?? this.position,
-      timestamp: timestamp ?? this.timestamp,
+      position: clearPosition ? null : (position ?? this.position),
+      timestamp: clearTimestamp ? null : (timestamp ?? this.timestamp),
       address: clearAddress ? null : (address ?? this.address),
       notes: clearNotes ? null : (notes ?? this.notes),
       status: status ?? this.status,

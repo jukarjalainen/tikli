@@ -32,7 +32,9 @@ class ObservationListItem extends StatelessWidget {
           Row(
             children: [
               Text(
-                dateFormat.format(observation.timestamp),
+                observation.timestamp != null
+                    ? dateFormat.format(observation.timestamp!)
+                    : 'Ei päivämäärää',
                 style: metadataStyle,
               ),
               const SizedBox(width: 12),

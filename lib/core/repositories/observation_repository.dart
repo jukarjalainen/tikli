@@ -27,15 +27,17 @@ class ObservationRepository {
   Future<void> addObservation({
     required Species species,
     required ObservationType type,
-    required DateTime timestamp,
-    required LatLng position,
+    DateTime? timestamp,
+    LatLng? position,
     String? address,
     String? notes,
   }) async {
-    final locationDescription = await _resolveAddress(
-      position: position,
-      providedAddress: address,
-    );
+    final locationDescription = position != null
+        ? await _resolveAddress(
+            position: position,
+            providedAddress: address,
+          )
+        : address;
     final id = _generateId(species.id, timestamp, type);
     final observation = Observation(
       id: id,
@@ -57,7 +59,9 @@ class ObservationRepository {
             : _observations.where((obs) => obs.type == type);
     final map = <int, List<Observation>>{};
     for (final observation in observations) {
-      final year = observation.timestamp.year;
+      // Skip observations without timestamp for yearly calculations
+      if (observation.timestamp == null) continue;
+      final year = observation.timestamp!.year;
       map.putIfAbsent(year, () => <Observation>[]).add(observation);
     }
     return SplayTreeMap.of(map, (a, b) => b.compareTo(a));
@@ -100,15 +104,27 @@ class ObservationRepository {
   }
 
   void _notify() {
-    _observations.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    _observations.sort((a, b) {
+      // Sort by timestamp if both have it
+      if (a.timestamp != null && b.timestamp != null) {
+        return b.timestamp!.compareTo(a.timestamp!);
+      }
+      // Observations without timestamp go last
+      if (a.timestamp == null && b.timestamp != null) return 1;
+      if (a.timestamp != null && b.timestamp == null) return -1;
+      // Both null, maintain current order
+      return 0;
+    });
     _controller.add(List.unmodifiable(_observations));
   }
 
   String _generateId(
     String speciesId,
-    DateTime timestamp,
+    DateTime? timestamp,
     ObservationType type,
   ) {
-    return '$speciesId-${type.storageKey}-${timestamp.millisecondsSinceEpoch}';
+    final timestampStr =
+        timestamp?.millisecondsSinceEpoch.toString() ?? 'no-date';
+    return '$speciesId-${type.storageKey}-$timestampStr';
   }
 }

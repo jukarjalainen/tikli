@@ -9,8 +9,8 @@ class Observation extends Equatable {
     required this.id,
     required this.species,
     required this.type,
-    required this.timestamp,
-    required this.position,
+    this.timestamp,
+    this.position,
     this.notes,
     this.address,
   });
@@ -18,8 +18,8 @@ class Observation extends Equatable {
   final String id;
   final Species species;
   final ObservationType type;
-  final DateTime timestamp;
-  final LatLng position;
+  final DateTime? timestamp;
+  final LatLng? position;
   final String? address;
   final String? notes;
 
@@ -28,7 +28,9 @@ class Observation extends Equatable {
     Species? species,
     ObservationType? type,
     DateTime? timestamp,
+    bool clearTimestamp = false,
     LatLng? position,
+    bool clearPosition = false,
     String? address,
     String? notes,
   }) {
@@ -36,8 +38,8 @@ class Observation extends Equatable {
       id: id ?? this.id,
       species: species ?? this.species,
       type: type ?? this.type,
-      timestamp: timestamp ?? this.timestamp,
-      position: position ?? this.position,
+      timestamp: clearTimestamp ? null : (timestamp ?? this.timestamp),
+      position: clearPosition ? null : (position ?? this.position),
       address: address ?? this.address,
       notes: notes ?? this.notes,
     );

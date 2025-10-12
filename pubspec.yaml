@@ -1,6 +1,6 @@
 name: tikli
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.0.0+1
 
@@ -29,3 +29,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/data/species.json
+    - assets/data/all_finnish_birds.json

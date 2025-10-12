@@ -8,9 +8,24 @@ import '../../../shared/widgets/binoculars_icon.dart';
 import '../bloc/species_list_bloc.dart';
 import '../../observation_list/bloc/observation_list_bloc.dart';
 import '../widgets/species_list_item.dart';
+import '../widgets/rare_species_dialog.dart';
 
 class SpeciesListScreen extends StatelessWidget {
   const SpeciesListScreen({super.key});
+
+  Future<void> _showRareSpeciesDialog(BuildContext context) async {
+    final Species? rareSpecies = await showDialog<Species>(
+      context: context,
+      builder: (context) => const RareSpeciesDialog(),
+    );
+
+    if (rareSpecies != null && context.mounted) {
+      // Navigate to observation form with the rare species
+      Navigator.of(
+        context,
+      ).pushNamed(AppRoutes.observationForm, arguments: [rareSpecies]);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +43,19 @@ class SpeciesListScreen extends StatelessWidget {
           },
           tooltip: 'Siirry pinnoihin',
         ),
+        actions: [
+          TextButton(
+            onPressed: () => _showRareSpeciesDialog(context),
+            child: const Text(
+              'Rari',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
       body: BlocBuilder<SpeciesListBloc, SpeciesListState>(
         builder: (context, state) {

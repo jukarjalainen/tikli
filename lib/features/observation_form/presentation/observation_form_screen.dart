@@ -74,8 +74,43 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                       children:
                           state.selectedSpecies
                               .map(
-                                (species) =>
+                                (species) => Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
                                     Chip(label: Text(species.commonName)),
+                                    Positioned(
+                                      top: -6,
+                                      right: -6,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          context
+                                              .read<ObservationFormBloc>()
+                                              .add(
+                                                ObservationFormSpeciesRemoved(
+                                                  species,
+                                                ),
+                                              );
+                                          context.read<SpeciesListBloc>().add(
+                                            SpeciesSelectionToggled(species.id),
+                                          );
+                                        },
+                                        child: Container(
+                                          width: 20,
+                                          height: 20,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.red,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.close,
+                                            size: 14,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               )
                               .toList(),
                     ),
@@ -165,9 +200,7 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                           return 'Ei asetettu';
                         }
                         final trimmed = state.address?.trim() ?? '';
-                        return trimmed.isNotEmpty
-                            ? trimmed
-                            : '';
+                        return trimmed.isNotEmpty ? trimmed : '';
                       }()),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,

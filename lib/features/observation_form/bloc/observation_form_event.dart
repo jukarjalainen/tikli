@@ -60,6 +60,15 @@ class ObservationFormLocationCleared extends ObservationFormEvent {
   const ObservationFormLocationCleared();
 }
 
+class ObservationFormSpeciesRemoved extends ObservationFormEvent {
+  const ObservationFormSpeciesRemoved(this.species);
+
+  final Species species;
+
+  @override
+  List<Object?> get props => [species];
+}
+
 class ObservationFormSubmitted extends ObservationFormEvent {
   const ObservationFormSubmitted();
 }

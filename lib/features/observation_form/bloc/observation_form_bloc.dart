@@ -31,6 +31,7 @@ class ObservationFormBloc
     on<ObservationFormLocationCleared>(_onLocationCleared);
     on<ObservationFormAddressChanged>(_onAddressChanged);
     on<ObservationFormNotesChanged>(_onNotesChanged);
+    on<ObservationFormSpeciesRemoved>(_onSpeciesRemoved);
     on<ObservationFormSubmitted>(_onSubmitted);
   }
 
@@ -89,6 +90,17 @@ class ObservationFormBloc
     Emitter<ObservationFormState> emit,
   ) {
     emit(state.copyWith(notes: event.notes));
+  }
+
+  void _onSpeciesRemoved(
+    ObservationFormSpeciesRemoved event,
+    Emitter<ObservationFormState> emit,
+  ) {
+    final updated = List<Species>.from(state.selectedSpecies);
+    if (!updated.remove(event.species)) {
+      return;
+    }
+    emit(state.copyWith(selectedSpecies: updated));
   }
 
   Future<void> _onSubmitted(

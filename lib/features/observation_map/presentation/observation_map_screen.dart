@@ -24,26 +24,21 @@ class ObservationMapScreen extends StatelessWidget {
           }
           final markers =
               observationsWithPosition
-                  .map(
+                  .map<Marker>(
                     (observation) => Marker(
                       point: observation.position!,
-                      width: 80,
-                      height: 40,
+                      width: 120,
+                      height: 80,
+                      alignment: Alignment.bottomCenter,
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            observation.type == ObservationType.yard
-                                ? Icons.home
-                                : observation.type == ObservationType.life
-                                ? Icons.eco
-                                : Icons.calendar_month,
-                            color: Colors.red,
-                          ),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 6,
                               vertical: 2,
                             ),
+                            margin: const EdgeInsets.only(bottom: 4),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(6),
@@ -54,7 +49,18 @@ class ObservationMapScreen extends StatelessWidget {
                             child: Text(
                               observation.species.commonName,
                               style: const TextStyle(fontSize: 10),
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
+                          ),
+                          Icon(
+                            observation.type == ObservationType.yard
+                                ? Icons.home
+                                : observation.type == ObservationType.life
+                                ? Icons.eco
+                                : Icons.calendar_month,
+                            color: Colors.red,
                           ),
                         ],
                       ),

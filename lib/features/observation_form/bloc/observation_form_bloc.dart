@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import '../../../core/enums/observation_type.dart';
 import '../../../core/models/species.dart';
 import '../../../core/repositories/observation_repository.dart';
+import '../../../core/services/location_service.dart';
 
 part 'observation_form_event.dart';
 part 'observation_form_state.dart';
@@ -13,17 +14,20 @@ class ObservationFormBloc
     extends Bloc<ObservationFormEvent, ObservationFormState> {
   ObservationFormBloc({
     required ObservationRepository observationRepository,
+    required LocationService locationService,
     required List<Species> selectedSpecies,
     LatLng? initialPosition,
     DateTime? initialTimestamp,
   }) : _observationRepository = observationRepository,
+       _locationService = locationService,
        super(
          ObservationFormState(
            selectedSpecies: selectedSpecies,
-           position: initialPosition ?? const LatLng(60.1699, 24.9384),
+           position: initialPosition,
            timestamp: initialTimestamp ?? DateTime.now(),
          ),
        ) {
+    on<ObservationFormLocationRequested>(_onLocationRequested);
     on<ObservationTypeToggled>(_onTypeToggled);
     on<ObservationFormTimestampChanged>(_onTimestampChanged);
     on<ObservationFormTimestampCleared>(_onTimestampCleared);
@@ -36,6 +40,21 @@ class ObservationFormBloc
   }
 
   final ObservationRepository _observationRepository;
+  final LocationService _locationService;
+
+  Future<void> _onLocationRequested(
+    ObservationFormLocationRequested event,
+    Emitter<ObservationFormState> emit,
+  ) async {
+    final resolved = await _locationService.getCurrentLocation();
+    if (resolved == null) {
+      return;
+    }
+    if (state.position == resolved) {
+      return;
+    }
+    emit(state.copyWith(position: resolved));
+  }
 
   void _onTypeToggled(
     ObservationTypeToggled event,

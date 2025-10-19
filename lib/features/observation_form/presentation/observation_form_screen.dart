@@ -267,6 +267,9 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: FlutterMap(
+                            key: ValueKey(
+                              'map-${state.position!.latitude.toStringAsFixed(4)}-${state.position!.longitude.toStringAsFixed(4)}',
+                            ),
                             options: MapOptions(
                               initialCenter: state.position!,
                               initialZoom: 12,

@@ -25,6 +25,10 @@ class ObservationFormTimestampChanged extends ObservationFormEvent {
   List<Object?> get props => [timestamp];
 }
 
+class ObservationFormLocationRequested extends ObservationFormEvent {
+  const ObservationFormLocationRequested();
+}
+
 class ObservationFormLocationChanged extends ObservationFormEvent {
   const ObservationFormLocationChanged(this.position);
 

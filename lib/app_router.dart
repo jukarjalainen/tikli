@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/constants/app_routes.dart';
 import 'core/models/species.dart';
 import 'core/repositories/observation_repository.dart';
+import 'core/services/location_service.dart';
 import 'features/observation_form/bloc/observation_form_bloc.dart';
 import 'features/observation_form/presentation/observation_form_screen.dart';
 import 'features/observation_list/presentation/observation_list_screen.dart';
@@ -27,12 +28,14 @@ class AppRouter {
         final species = settings.arguments as List<Species>? ?? <Species>[];
         return MaterialPageRoute(
           builder: (context) {
+            final locationService = context.read<LocationService>();
             return BlocProvider(
               create:
                   (_) => ObservationFormBloc(
                     observationRepository: _observationRepository,
+                    locationService: locationService,
                     selectedSpecies: species,
-                  ),
+                  )..add(const ObservationFormLocationRequested()),
               child: ObservationFormScreen(selectedSpecies: species),
             );
           },

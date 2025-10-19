@@ -103,6 +103,14 @@ class ObservationRepository {
     return '${position.latitude.toStringAsFixed(5)}:${position.longitude.toStringAsFixed(5)}';
   }
 
+  Future<void> deleteObservation(String id) async {
+    final initialLength = _observations.length;
+    _observations.removeWhere((observation) => observation.id == id);
+    if (_observations.length != initialLength) {
+      _notify();
+    }
+  }
+
   void _notify() {
     _observations.sort((a, b) {
       final aTime = a.timestamp ?? DateTime(1970);

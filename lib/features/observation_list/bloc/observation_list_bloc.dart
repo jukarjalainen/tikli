@@ -18,6 +18,7 @@ class ObservationListBloc
     on<ObservationListSubscriptionRequested>(_onSubscriptionRequested);
     on<ObservationListDataChanged>(_onDataChanged);
     on<ObservationListFilterChanged>(_onFilterChanged);
+    on<ObservationListObservationDeleted>(_onObservationDeleted);
   }
 
   final ObservationRepository _observationRepository;
@@ -125,6 +126,13 @@ class ObservationListBloc
       filtered.add(observation);
     }
     return filtered;
+  }
+
+  Future<void> _onObservationDeleted(
+    ObservationListObservationDeleted event,
+    Emitter<ObservationListState> emit,
+  ) async {
+    await _observationRepository.deleteObservation(event.id);
   }
 
   @override

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../../core/models/observation.dart';
+import '../bloc/observation_list_bloc.dart';
 
-class ObservationListItem extends StatelessWidget {
+class ObservationListItem extends StatefulWidget {
   const ObservationListItem({
     super.key,
     required this.observation,
@@ -14,14 +17,43 @@ class ObservationListItem extends StatelessWidget {
   final DateFormat dateFormat;
 
   @override
+  State<ObservationListItem> createState() => _ObservationListItemState();
+}
+
+class _ObservationListItemState extends State<ObservationListItem> {
+  bool _showDelete = false;
+
+  void _handleLongPress() {
+    setState(() => _showDelete = true);
+  }
+
+  void _handleDismissDelete() {
+    if (_showDelete) {
+      setState(() => _showDelete = false);
+    }
+  }
+
+  void _handleDeletePressed() {
+    setState(() => _showDelete = false);
+    context.read<ObservationListBloc>().add(
+      ObservationListObservationDeleted(widget.observation.id),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final commonName = observation.species.commonName;
-    final rawLocation = observation.address?.trim() ?? '';
-    final location =
-        rawLocation.isNotEmpty ? rawLocation : '';
+    final commonName = widget.observation.species.commonName;
+    final rawLocation = widget.observation.address?.trim() ?? '';
+    final location = rawLocation.isNotEmpty ? rawLocation : '';
     final metadataStyle = Theme.of(context).textTheme.bodySmall;
 
     return ListTile(
+      onLongPress: _handleLongPress,
+      onTap: _showDelete ? _handleDismissDelete : null,
+      tileColor:
+          _showDelete
+              ? Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.2)
+              : null,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,8 +64,8 @@ class ObservationListItem extends StatelessWidget {
           Row(
             children: [
               Text(
-                observation.timestamp != null
-                    ? dateFormat.format(observation.timestamp!)
+                widget.observation.timestamp != null
+                    ? widget.dateFormat.format(widget.observation.timestamp!)
                     : '',
                 style: metadataStyle,
               ),
@@ -48,6 +80,24 @@ class ObservationListItem extends StatelessWidget {
             ],
           ),
         ],
+      ),
+      trailing: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 180),
+        transitionBuilder:
+            (child, animation) =>
+                ScaleTransition(scale: animation, child: child),
+        child:
+            _showDelete
+                ? IconButton(
+                  key: const ValueKey('delete'),
+                  icon: Icon(
+                    MdiIcons.trashCan,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  tooltip: 'Poista havainto',
+                  onPressed: _handleDeletePressed,
+                )
+                : const SizedBox.shrink(key: ValueKey('placeholder')),
       ),
     );
   }

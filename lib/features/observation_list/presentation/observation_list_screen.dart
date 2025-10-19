@@ -233,6 +233,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                               itemBuilder: (context, index) {
                                 final observation = displayObservations[index];
                                 return ObservationListItem(
+                                  key: ValueKey(observation.id),
                                   observation: observation,
                                   dateFormat: _dateFormat,
                                 );

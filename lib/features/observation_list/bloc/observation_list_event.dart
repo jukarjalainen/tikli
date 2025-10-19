@@ -29,3 +29,12 @@ class ObservationListFilterChanged extends ObservationListEvent {
   @override
   List<Object?> get props => [type, year];
 }
+
+class ObservationListObservationDeleted extends ObservationListEvent {
+  const ObservationListObservationDeleted(this.id);
+
+  final String id;
+
+  @override
+  List<Object?> get props => [id];
+}

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../../core/enums/observation_type.dart';
 import '../../observation_list/bloc/observation_list_bloc.dart';
@@ -55,12 +56,13 @@ class ObservationMapScreen extends StatelessWidget {
                             ),
                           ),
                           Icon(
-                            observation.type == ObservationType.yard
-                                ? Icons.home
-                                : observation.type == ObservationType.life
-                                ? Icons.eco
-                                : Icons.calendar_month,
-                            color: Colors.red,
+                            MdiIcons.mapMarkerStar,
+                            color:
+                                observation.type == ObservationType.life
+                                    ? Colors.green
+                                    : observation.type == ObservationType.yard
+                                    ? Colors.orange
+                                    : Colors.red,
                           ),
                         ],
                       ),

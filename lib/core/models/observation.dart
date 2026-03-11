@@ -5,24 +5,27 @@ import '../enums/observation_type.dart';
 import 'species.dart';
 
 class Observation extends Equatable {
+  // Constructor for creating an Observation object
   const Observation({
-    required this.id,
-    required this.species,
-    required this.type,
-    this.timestamp,
-    this.position,
-    this.notes,
-    this.address,
+    required this.id, // Unique identifier for the observation
+    required this.species, // The species being observed
+    required this.type, // The type/category of the observation
+    this.timestamp, // Optional timestamp for when the observation occurred
+    this.position, // Optional geographical position (latitude and longitude)
+    this.notes, // Optional notes about the observation
+    this.address, // Optional address or location description
   });
 
-  final String id;
-  final Species species;
-  final ObservationType type;
-  final DateTime? timestamp;
-  final LatLng? position;
-  final String? address;
-  final String? notes;
+  // Fields representing the properties of an observation
+  final String id; // Unique ID for the observation
+  final Species species; // The species associated with the observation
+  final ObservationType type; // The type of observation (e.g., sighting, sound)
+  final DateTime? timestamp; // The date and time of the observation
+  final LatLng? position; // The geographical position of the observation
+  final String? address; // The address or description of the location
+  final String? notes; // Additional notes about the observation
 
+  // Method to create a copy of the current Observation with modified fields
   Observation copyWith({
     String? id,
     Species? species,
@@ -33,16 +36,20 @@ class Observation extends Equatable {
     String? notes,
   }) {
     return Observation(
-      id: id ?? this.id,
-      species: species ?? this.species,
-      type: type ?? this.type,
-      timestamp: timestamp ?? this.timestamp,
-      position: position ?? this.position,
-      address: address ?? this.address,
-      notes: notes ?? this.notes,
+      id:
+          id ??
+          this.id, // Use the new ID if provided, otherwise keep the current ID
+      species: species ?? this.species, // Use the new species if provided
+      type: type ?? this.type, // Use the new type if provided
+      timestamp:
+          timestamp ?? this.timestamp, // Use the new timestamp if provided
+      position: position ?? this.position, // Use the new position if provided
+      address: address ?? this.address, // Use the new address if provided
+      notes: notes ?? this.notes, // Use the new notes if provided
     );
   }
 
+  // Equatable props to enable value comparison for Observation objects
   @override
   List<Object?> get props => [
     id,
@@ -53,4 +60,23 @@ class Observation extends Equatable {
     address,
     notes,
   ];
+
+  // Converts the Observation object into a map for database storage
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id, // Store the observation ID
+      'speciesId': species.id, // Store only the species ID
+      'type': type.storageKey, // Store the type identifier
+      'timestamp':
+          timestamp?.toIso8601String(), // Convert timestamp to ISO 8601 string
+      'latitude': position?.latitude, // Store latitude if position is available
+      'longitude':
+          position?.longitude, // Store longitude if position is available
+      'address': address, // Store the address
+      'notes': notes, // Store the notes
+    };
+  }
+
+  // Note: A fromMap method is typically implemented as a factory or static method.
+  // This would require a proper Species object based on the species ID later.
 }

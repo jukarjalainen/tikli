@@ -1,0 +1,44 @@
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+
+class DatabaseService {
+  // Singleton instance of the database
+  static Database? _database;
+
+  // Getter to retrieve the database instance, initializing it if necessary
+  Future<Database> get database async {
+    // If the database is already initialized, return it
+    if (_database != null) return _database!;
+    // Otherwise, initialize the database
+    _database = await _initDB('observations.db');
+    return _database!;
+  }
+
+  // Private method to initialize the database
+  Future<Database> _initDB(String filePath) async {
+    // Get the default database path for the device
+    final dbPath = await getDatabasesPath();
+    // Combine the database path with the file name
+    final path = join(dbPath, filePath);
+
+    // Open the database, setting its version and creation callback
+    return await openDatabase(path, version: 1, onCreate: _createDB);
+  }
+
+  // Callback to create the database schema when the database is first created
+  Future<void> _createDB(Database db, int version) async {
+    // Create a table named 'observations' with the specified columns
+    await db.execute('''
+      CREATE TABLE observations (
+        id TEXT PRIMARY KEY,          -- Unique identifier for each observation
+        speciesId TEXT NOT NULL,      -- ID of the species being observed
+        type TEXT NOT NULL,           -- Type/category of the observation
+        timestamp TEXT,               -- Time when the observation was made
+        latitude REAL,                -- Latitude of the observation location
+        longitude REAL,               -- Longitude of the observation location
+        address TEXT,                 -- Address or description of the location
+        notes TEXT                    -- Additional notes about the observation
+      )
+    ''');
+  }
+}

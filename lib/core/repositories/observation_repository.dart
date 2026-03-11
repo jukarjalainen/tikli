@@ -7,11 +7,17 @@ import '../enums/observation_type.dart';
 import '../models/observation.dart';
 import '../models/species.dart';
 import '../services/reverse_geocoding_service.dart';
+import '../services/database_service.dart';
+import 'package:sqflite/sqflite.dart';
 
 class ObservationRepository {
   ObservationRepository({ReverseGeocodingService? geocodingService})
     : _reverseGeocodingService = geocodingService ?? ReverseGeocodingService(),
-      _ownsGeocodingService = geocodingService == null;
+      _ownsGeocodingService = geocodingService == null {
+    _initDatabase();
+  }
+
+  final DatabaseService _dbService = DatabaseService();
 
   final List<Observation> _observations = [];
   final StreamController<List<Observation>> _controller =
@@ -49,6 +55,14 @@ class ObservationRepository {
       address: locationDescription,
       notes: notes,
     );
+    // Tallenna tietokantaan
+    final db = await _dbService.database;
+    await db.insert(
+      'observations', 
+      observation.toMap(), // Vaatii Vaiheessa 2 tehdyn toMap() metodin
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
     _observations.add(observation);
     _notify();
   }
@@ -105,6 +119,12 @@ class ObservationRepository {
 
   Future<void> deleteObservation(String id) async {
     final initialLength = _observations.length;
+    final db = await _dbService.database;
+    await db.delete(
+      'observations',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
     _observations.removeWhere((observation) => observation.id == id);
     if (_observations.length != initialLength) {
       _notify();
@@ -127,4 +147,37 @@ class ObservationRepository {
   ) {
     return '$speciesId-${type.storageKey}-${timestamp.millisecondsSinceEpoch}';
   }
+
+  Future<void> _initDatabase() async {
+    final db = await _dbService.database;
+    final List<Map<String, dynamic>> maps = await db.query('observations');
+
+    // Tyhjennetään nykyinen lista varmuuden vuoksi
+    _observations.clear();
+
+    for (var map in maps) {
+      // Tässä sinun täytyy hakea oikea Species-objekti map['speciesId']:n avulla.
+      // Oletetaan, että sinulla on tapa hakea se (esim. SpeciesRepository tai lista kaikista lajeista).
+      // Alla on yksinkertaistettu runko:
+      
+      /*
+      final species = _haeLajiIdlla(map['speciesId']); 
+      final type = ObservationType.values.firstWhere((e) => e.storageKey == map['type']);
+      
+      final observation = Observation(
+        id: map['id'],
+        species: species,
+        type: type,
+        timestamp: map['timestamp'] != null ? DateTime.parse(map['timestamp']) : null,
+        position: map['latitude'] != null ? LatLng(map['latitude'], map['longitude']) : null,
+        address: map['address'],
+        notes: map['notes'],
+      );
+      _observations.add(observation);
+      */
+    }
+    _notify(); // Päivittää UI:n, kun havainnot on ladattu!
+  }
+
+  
 }

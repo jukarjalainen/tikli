@@ -59,4 +59,17 @@ class DatabaseService {
       conflictAlgorithm: ConflictAlgorithm.replace, 
     );
   }
+
+  /// Deletes an observation from the database by its ID
+  ///
+  /// This method is asynchronous and will return a Future that completes
+  /// when the deletion is complete. If the observation with the given
+  /// ID does not exist in the database, this method will do nothing.
+  ///
+  /// [id] The ID of the observation to delete. This should be a unique
+  /// identifier for the observation in the database.
+  Future<void> deleteObservation(String id) async {
+  final db = await database;
+  await db.delete('observations', where: 'id = ?', whereArgs: [id]);
+}
 }

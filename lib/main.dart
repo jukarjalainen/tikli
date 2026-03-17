@@ -6,8 +6,9 @@ import 'core/repositories/species_repository.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  final observationRepository = ObservationRepository();
   final speciesRepository = SpeciesRepository();
+  final observationRepository = ObservationRepository(speciesRepository: speciesRepository);
+
   runApp(
     TikliApp(
       observationRepository: observationRepository,

@@ -8,16 +8,17 @@ import '../models/observation.dart';
 import '../models/species.dart';
 import '../services/reverse_geocoding_service.dart';
 import '../services/database_service.dart';
-import 'package:sqflite/sqflite.dart';
 import '../repositories/species_repository.dart';
 
 class ObservationRepository {
-  ObservationRepository({ReverseGeocodingService? geocodingService})
-    : _reverseGeocodingService = geocodingService ?? ReverseGeocodingService(),
-      _ownsGeocodingService = geocodingService == null {
+  ObservationRepository({
+    required this.speciesRepository,
+    ReverseGeocodingService? geocodingService,
+  }) : _reverseGeocodingService = geocodingService ?? ReverseGeocodingService(),
+       _ownsGeocodingService = geocodingService == null {
     _initDatabase();
   }
-
+  final SpeciesRepository speciesRepository;
   final DatabaseService _dbService = DatabaseService();
 
   final List<Observation> _observations = [];
@@ -58,10 +59,10 @@ class ObservationRepository {
     );
 
     _observations.add(observation);
-    _controller.add(_observations);
+    _notify();
 
     // Save the observation to the database
-    await _saveObservationToDatabase(observation);
+    await _dbService.insertObservation(observation.toMap());
   }
 
   Map<int, List<Observation>> yearlyObservations({ObservationType? type}) {
@@ -116,8 +117,7 @@ class ObservationRepository {
 
   Future<void> deleteObservation(String id) async {
     final initialLength = _observations.length;
-    final db = await _dbService.database;
-    await db.delete('observations', where: 'id = ?', whereArgs: [id]);
+    await _dbService.deleteObservation(id);
     _observations.removeWhere((observation) => observation.id == id);
     if (_observations.length != initialLength) {
       _notify();
@@ -143,7 +143,6 @@ class ObservationRepository {
 
   // Initialize the database and load observations
   Future<void> _initDatabase() async {
-    final speciesRepository = SpeciesRepository();
     final speciesList = await speciesRepository.loadSpecies();
     final speciesMap = {for (var species in speciesList) species.id: species};
 
@@ -158,10 +157,5 @@ class ObservationRepository {
       }),
     );
     _controller.add(_observations);
-  }
-
-  // Save observation to the database
-  Future<void> _saveObservationToDatabase(Observation observation) async {
-    await _dbService.insertObservation(observation.toMap());
   }
 }

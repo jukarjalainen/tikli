@@ -83,7 +83,7 @@ class Observation extends Equatable {
     return Observation(
       id: map['id'] as String,
       species: species,
-      type: ObservationType.fromStorageKey(map['type'] as String),
+      type: ObservationTypeParser.fromStorageKey(map['type'] as String),
       timestamp:
           map['timestamp'] != null
               ? DateTime.parse(map['timestamp'] as String)

@@ -41,4 +41,22 @@ class DatabaseService {
       )
     ''');
   }
+
+  // Gets observations from the database and returns them as a list of maps
+  Future<List<Map<String, dynamic>>> getAllObservations() async {
+    final db = await database;
+    // 'observations' on Vaiheessa 3 luomasi taulun nimi
+    return await db.query('observations');
+  }
+
+  // Saves an observation to the database by inserting a map representation of the observation
+  Future<void> insertObservation(Map<String, dynamic> observationMap) async {
+    final db = await database;
+    await db.insert(
+      'observations', 
+      observationMap,
+      // If an observation with the same ID already exists, replace it with the new one
+      conflictAlgorithm: ConflictAlgorithm.replace, 
+    );
+  }
 }

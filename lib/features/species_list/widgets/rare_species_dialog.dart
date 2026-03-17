@@ -3,7 +3,8 @@ import '../../../core/models/species.dart';
 import '../../../core/services/all_birds_service.dart';
 
 class RareSpeciesDialog extends StatefulWidget {
-  const RareSpeciesDialog({super.key});
+  const RareSpeciesDialog({super.key, required this.existingSpecies});
+  final List<Species> existingSpecies;
 
   @override
   State<RareSpeciesDialog> createState() => _RareSpeciesDialogState();
@@ -60,6 +61,18 @@ class _RareSpeciesDialogState extends State<RareSpeciesDialog> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Kirjoita lajin nimi')));
+      return;
+    }
+
+    // Check if the species name already exists in the existingSpecies list
+    final existingIndex = widget.existingSpecies.indexWhere(
+      (s) => s.commonName.toLowerCase() == speciesName.toLowerCase()
+    );
+
+    if (existingIndex != -1) {
+      // If the species name already exists in the existingSpecies list, return
+      // the existing Species object.
+      Navigator.of(context).pop(widget.existingSpecies[existingIndex]);
       return;
     }
 

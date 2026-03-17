@@ -13,10 +13,13 @@ import '../widgets/rare_species_dialog.dart';
 class SpeciesListScreen extends StatelessWidget {
   const SpeciesListScreen({super.key});
 
-  Future<void> _showRareSpeciesDialog(BuildContext context) async {
+ Future<void> _showRareSpeciesDialog(BuildContext context) async {
+    // Get existing species
+    final existingSpecies = context.read<SpeciesListBloc>().state.species;
+
     final Species? rareSpecies = await showDialog<Species>(
       context: context,
-      builder: (context) => const RareSpeciesDialog(),
+      builder: (context) => RareSpeciesDialog(existingSpecies: existingSpecies),
     );
 
     if (rareSpecies != null && context.mounted) {

@@ -130,7 +130,7 @@ class ObservationFormBloc
       emit(
         state.copyWith(
           status: ObservationFormStatus.failure,
-          errorMessage: 'Valitse vahintaan yksi laji.',
+          errorMessage: 'Valitse vähintään yksi laji.',
         ),
       );
       return;
@@ -139,7 +139,7 @@ class ObservationFormBloc
       emit(
         state.copyWith(
           status: ObservationFormStatus.failure,
-          errorMessage: 'Valitse vahintaan yksi pinnatyyppi.',
+          errorMessage: 'Valitse vähintään yksi pinnatyyppi.',
         ),
       );
       return;
@@ -159,22 +159,49 @@ class ObservationFormBloc
 
     emit(state.copyWith(status: ObservationFormStatus.saving));
     try {
-      final lifeSpeciesIds =
-          _observationRepository
-              .getAll()
-              .where((observation) => observation.type == ObservationType.life)
-              .map((observation) => observation.species.id)
-              .toSet();
+      // Haetaan kaikki jo tallennetut havainnot vertailua varten
+      final allObservations = _observationRepository.getAll();
+
       for (final species in state.selectedSpecies) {
         final typesToSave = Set<ObservationType>.from(state.selectedTypes);
+
+        // Etsitään tälle kyseiselle lajille jo olemassa olevat havainnot
+        final existingObs = allObservations
+            .where((o) => o.species.id == species.id)
+            .toList();
+
+        // 1. Poista elis tallennettavista, jos se on jo havaittu
+        if (existingObs.any((o) => o.type == ObservationType.life)) {
+          typesToSave.remove(ObservationType.life);
+        }
+
+        // 2. Poista pihapinna tallennettavista, jos se on jo havaittu
+        if (existingObs.any((o) => o.type == ObservationType.yard)) {
+          typesToSave.remove(ObservationType.yard);
+        }
+
+        // 3. Poista vuodenpinna, jos se on jo havaittu TÄNÄ VUONNA
+        if (state.timestamp != null) {
+          final currentYear = state.timestamp!.year;
+          if (existingObs.any((o) =>
+              o.type == ObservationType.yearly &&
+              o.timestamp?.year == currentYear)) {
+            typesToSave.remove(ObservationType.yearly);
+          }
+        }
+
+        // Tarkistetaan, pitääkö lajille luoda automaattisesti myös elis.
+        // (Jos käyttäjä valitsi vuosi- tai pihapinnan, mutta lajista ei ole elistä olemassa)
         final requiresLifeEntry =
-            (typesToSave.contains(ObservationType.yearly) ||
-                typesToSave.contains(ObservationType.yard)) &&
-            !typesToSave.contains(ObservationType.life) &&
-            !lifeSpeciesIds.contains(species.id);
+            (state.selectedTypes.contains(ObservationType.yearly) ||
+             state.selectedTypes.contains(ObservationType.yard)) &&
+            !existingObs.any((o) => o.type == ObservationType.life);
+
         if (requiresLifeEntry) {
           typesToSave.add(ObservationType.life);
         }
+
+        // Tallennetaan vain ne pinnat, joita listalla on jäljellä
         for (final type in typesToSave) {
           await _observationRepository.addObservation(
             species: species,
@@ -185,9 +212,6 @@ class ObservationFormBloc
                 state.address?.trim().isEmpty == true ? null : state.address,
             notes: state.notes?.trim().isEmpty == true ? null : state.notes,
           );
-          if (type == ObservationType.life) {
-            lifeSpeciesIds.add(species.id);
-          }
         }
       }
       emit(state.copyWith(status: ObservationFormStatus.success));

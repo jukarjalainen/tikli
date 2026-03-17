@@ -52,7 +52,7 @@ class _ObservationListItemState extends State<ObservationListItem> {
       onTap: _showDelete ? _handleDismissDelete : null,
       tileColor:
           _showDelete
-              ? Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.2)
+              ? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.2)
               : null,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       title: Column(

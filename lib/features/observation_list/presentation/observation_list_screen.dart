@@ -161,7 +161,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                           children: [
                             Expanded(
                               child: DropdownButtonFormField<ObservationType>(
-                                value: state.filterType,
+                                initialValue: state.filterType,
                                 decoration: const InputDecoration(
                                   labelText: 'Pinnatyyppi',
                                 ),
@@ -186,7 +186,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                               const SizedBox(width: 16),
                               Expanded(
                                 child: DropdownButtonFormField<int>(
-                                  value: state.selectedYear,
+                                  initialValue: state.selectedYear,
                                   decoration: const InputDecoration(
                                     labelText: 'Vuosi',
                                   ),

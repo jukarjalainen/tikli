@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';
 
+// Ensure the ObservationTypeParser extension is explicitly imported
 import '../enums/observation_type.dart';
 import 'species.dart';
 
@@ -77,6 +78,22 @@ class Observation extends Equatable {
     };
   }
 
-  // Note: A fromMap method is typically implemented as a factory or static method.
-  // This would require a proper Species object based on the species ID later.
+  // Factory method to create an Observation object from a map
+  factory Observation.fromMap(Map<String, dynamic> map, Species species) {
+    return Observation(
+      id: map['id'] as String,
+      species: species,
+      type: ObservationType.fromStorageKey(map['type'] as String),
+      timestamp:
+          map['timestamp'] != null
+              ? DateTime.parse(map['timestamp'] as String)
+              : null,
+      position:
+          map['latitude'] != null && map['longitude'] != null
+              ? LatLng(map['latitude'] as double, map['longitude'] as double)
+              : null,
+      address: map['address'] as String?,
+      notes: map['notes'] as String?,
+    );
+  }
 }

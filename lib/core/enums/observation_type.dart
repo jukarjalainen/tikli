@@ -23,3 +23,19 @@ extension ObservationTypeTitle on ObservationType {
     }
   }
 }
+
+extension ObservationTypeParser on ObservationType {
+  // Factory method to parse ObservationType from a storage key
+  static ObservationType fromStorageKey(String key) {
+    switch (key) {
+      case 'yearly':
+        return ObservationType.yearly;
+      case 'yard':
+        return ObservationType.yard;
+      case 'life':
+        return ObservationType.life;
+      default:
+        throw ArgumentError('Invalid storage key for ObservationType: $key');
+    }
+  }
+}

@@ -29,6 +29,8 @@ class ObservationListBloc
     Emitter<ObservationListState> emit,
   ) async {
     emit(state.copyWith(status: ObservationListStatus.loading));
+    await _observationRepository
+        ._initDatabase(); // Load observations from the database
     await _subscription?.cancel();
     _subscription = _observationRepository.watchAll().listen(
       (observations) => add(ObservationListDataChanged(observations)),

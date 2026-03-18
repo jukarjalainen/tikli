@@ -28,9 +28,12 @@ class ObservationRepository {
   final bool _ownsGeocodingService;
   final Map<String, String?> _reverseGeocodeCache = {};
 
-  Stream<List<Observation>> watchAll() => _controller.stream;
+  Stream<List<Observation>> watchAll() async* {
+    yield [..._observations]; 
+    yield* _controller.stream;
+  }
 
-  List<Observation> getAll() => List.unmodifiable(_observations);
+  List<Observation> getAll() => [..._observations];
 
   Future<void> addObservation({
     required Species species,
@@ -126,11 +129,12 @@ class ObservationRepository {
 
   void _notify() {
     _observations.sort((a, b) {
-      final aTime = a.timestamp ?? DateTime(1970);
-      final bTime = b.timestamp ?? DateTime(1970);
-      return bTime.compareTo(aTime);
+      if (a.timestamp == null && b.timestamp == null) return 0;
+      if (a.timestamp == null) return 1;
+      if (b.timestamp == null) return -1;
+      return b.timestamp!.compareTo(a.timestamp!);
     });
-    _controller.add(List.unmodifiable(_observations));
+    _controller.add([..._observations]);
   }
 
   String _generateId(

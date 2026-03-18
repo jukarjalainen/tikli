@@ -24,7 +24,7 @@ class ExportScreen extends StatelessWidget {
   String _generateTextContent(List<Observation> observations) {
     final buffer = StringBuffer();
 
-    // 1. order observations by timestamp (oldest first), nulls last
+    // 1. sort the observations by timestamp (oldest first), but keep those without timestamp at the end
     final sortedObs = List<Observation>.from(observations)
       ..sort((a, b) {
         if (a.timestamp == null && b.timestamp == null) return 0;
@@ -33,28 +33,39 @@ class ExportScreen extends StatelessWidget {
         return a.timestamp!.compareTo(b.timestamp!);
       });
 
-    // 2. set the order of types: yearly, yard, life (or whatever order is desired)
-    final typesOrder = [
-      ObservationType.yearly,
-      ObservationType.yard,
-      ObservationType.life
+    // 2. set up the sections we want to print, in the desired order
+    final sections = [
+      (type: ObservationType.yearly, header: 'Vuodenpinnat'),
+      (type: ObservationType.yard, header: 'Pihapinnat'),
+      (type: ObservationType.life, header: 'Elämänpinnat'),
     ];
 
-    int globalIndex = 1;
+    // 3. go through each section, filter the observations by type, and print them with a global index
+    for (var i = 0; i < sections.length; i++) {
+      final section = sections[i];
+      final typeObs = sortedObs.where((o) => o.type == section.type).toList();
 
-    // 3. Print each type separately
-    for (final type in typesOrder) {
-      final typeObs = sortedObs.where((o) => o.type == type).toList();
+      // print the section header only if there are observations of that type
+      buffer.writeln(section.header);
+
+      // start the index at 1
+      int index = 1;
+
       for (final obs in typeObs) {
         final dateStr = _formatDate(obs.timestamp);
         final addressStr = obs.address ?? '';
 
-        // Muoto: 1. talitiainen 1.1.2026 oulu
-        final line = '$globalIndex. ${obs.species.commonName.toLowerCase()} $dateStr $addressStr'.trim();
+        // e.g., 1. talitiainen 1.1.2026 oulu
+        final line = '$index. ${obs.species.commonName.toLowerCase()} $dateStr $addressStr'.trim();
         
-        // clean up whitespace
+        // convert multiple spaces to a single space
         buffer.writeln(line.replaceAll(RegExp(r'\s+'), ' '));
-        globalIndex++;
+        index++;
+      }
+
+      // add an extra line break between sections, but not after the last one
+      if (i < sections.length - 1) {
+        buffer.writeln();
       }
     }
 

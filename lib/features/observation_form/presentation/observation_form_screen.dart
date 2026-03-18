@@ -7,6 +7,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:tikli/core/constants/app_routes.dart';
 
 import '../../../core/enums/observation_type.dart';
 import '../../../core/models/species.dart';

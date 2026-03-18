@@ -1,4 +1,4 @@
-// BLoC managing the state and logic of the observation input form. 
+// BLoC managing the state and logic of the observation input form.
 // Handles validation, duplicate prevention, and formatting before saving via ObservationRepository.
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +9,7 @@ import '../../../core/enums/observation_type.dart';
 import '../../../core/models/species.dart';
 import '../../../core/repositories/observation_repository.dart';
 import '../../../core/services/location_service.dart';
+import '../../../core/services/reverse_geocoding_service.dart';
 
 part 'observation_form_event.dart';
 part 'observation_form_state.dart';
@@ -44,6 +45,8 @@ class ObservationFormBloc
 
   final ObservationRepository _observationRepository;
   final LocationService _locationService;
+  final ReverseGeocodingService _reverseGeocodingService =
+      ReverseGeocodingService();
 
   Future<void> _onLocationRequested(
     ObservationFormLocationRequested event,
@@ -93,13 +96,15 @@ class ObservationFormBloc
   ) async {
     // 1. update the position in the state immediately so that the UI can reflect the new location (e.g. on map preview)
     emit(state.copyWith(position: event.position));
-    
+
     // 2. get the municipality for the new coordinates using reverse geocoding and update the state with the new address
     try {
-      final address = await _reverseGeocodingService.getAddressFromCoordinates(event.position);
+      final address = await _reverseGeocodingService.getAddressFromCoordinates(
+        event.position,
+      );
       if (address != null) {
         // update the state with the new address, but only if the position hasn't changed again in the meantime (to avoid showing wrong address if user quickly changes location multiple times)
-        emit(state.copyWith(address: address)); 
+        emit(state.copyWith(address: address));
       }
     } catch (_) {
       // if the reverse geocoding fails for any reason, we can choose to either keep the old address or clear it. Here we choose to keep the old address to avoid losing potentially valid location info.
@@ -118,9 +123,7 @@ class ObservationFormBloc
     Emitter<ObservationFormState> emit,
   ) {
     // updating the address in the state immediately without reverse geocoding, since we assume that if user is manually entering an address, they know what they are doing and don't need the app to validate it by looking up coordinates
-    emit(state.copyWith(
-      address: event.address,
-    ));
+    emit(state.copyWith(address: event.address));
   }
 
   void _onNotesChanged(
@@ -185,9 +188,8 @@ class ObservationFormBloc
         final typesToSave = Set<ObservationType>.from(state.selectedTypes);
 
         // Etsitään tälle kyseiselle lajille jo olemassa olevat havainnot
-        final existingObs = allObservations
-            .where((o) => o.species.id == species.id)
-            .toList();
+        final existingObs =
+            allObservations.where((o) => o.species.id == species.id).toList();
 
         // 1. Poista elis tallennettavista, jos se on jo havaittu
         if (existingObs.any((o) => o.type == ObservationType.life)) {
@@ -202,9 +204,11 @@ class ObservationFormBloc
         // 3. Poista vuodenpinna, jos se on jo havaittu TÄNÄ VUONNA
         if (state.timestamp != null) {
           final currentYear = state.timestamp!.year;
-          if (existingObs.any((o) =>
-              o.type == ObservationType.yearly &&
-              o.timestamp?.year == currentYear)) {
+          if (existingObs.any(
+            (o) =>
+                o.type == ObservationType.yearly &&
+                o.timestamp?.year == currentYear,
+          )) {
             typesToSave.remove(ObservationType.yearly);
           }
         }
@@ -213,7 +217,7 @@ class ObservationFormBloc
         // (Jos käyttäjä valitsi vuosi- tai pihapinnan, mutta lajista ei ole elistä olemassa)
         final requiresLifeEntry =
             (state.selectedTypes.contains(ObservationType.yearly) ||
-             state.selectedTypes.contains(ObservationType.yard)) &&
+                state.selectedTypes.contains(ObservationType.yard)) &&
             !existingObs.any((o) => o.type == ObservationType.life);
 
         if (requiresLifeEntry) {

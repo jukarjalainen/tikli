@@ -1,3 +1,6 @@
+// Service class handling all local SQLite database operations. 
+// Responsible for initializing the database, creating tables, and executing CRUD queries.
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 

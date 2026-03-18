@@ -1,3 +1,6 @@
+// A dialog widget allowing users to manually input and add a rare bird species 
+// that is not found in the standard local JSON list.
+
 import 'package:flutter/material.dart';
 import '../../../core/models/species.dart';
 import '../../../core/services/all_birds_service.dart';

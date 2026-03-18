@@ -1,7 +1,8 @@
+// Repository class responsible for loading and providing bird species data 
+// from the local JSON asset file.
+
 import 'dart:convert';
-
 import 'package:flutter/services.dart' show rootBundle;
-
 import '../models/species.dart';
 
 class SpeciesRepository {

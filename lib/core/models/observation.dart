@@ -1,3 +1,6 @@
+// Data model representing a single bird observation. 
+// Contains properties like species, timestamp, location, and observation type.
+
 import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';
 

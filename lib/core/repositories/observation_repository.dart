@@ -1,3 +1,6 @@
+// Repository class managing bird observation data. 
+// Acts as the single source of truth by coordinating data between local memory and the SQLite DatabaseService.
+
 import 'dart:async';
 import 'dart:collection';
 

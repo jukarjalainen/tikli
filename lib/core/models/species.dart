@@ -1,3 +1,6 @@
+// Data model representing a bird species. 
+// Used across the application for identification and listing purposes.
+
 import 'package:equatable/equatable.dart';
 
 class Species extends Equatable {

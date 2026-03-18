@@ -1,3 +1,6 @@
+// Manages the navigation and routing logic for the entire application. 
+// Defines the routes and maps them to their respective screens.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

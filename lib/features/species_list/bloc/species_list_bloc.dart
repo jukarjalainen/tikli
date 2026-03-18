@@ -1,3 +1,6 @@
+// BLoC managing the state of the species selection list. 
+// Handles searching/filtering species and merging them with existing observation data (e.g., life/year ticks).
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 

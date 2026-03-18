@@ -1,8 +1,9 @@
-import 'dart:async';
+// BLoC (Business Logic Component) managing the state of the observation list. 
+// Listens to the ObservationRepository stream and updates the UI state when data changes.
 
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-
 import '../../../core/enums/observation_type.dart';
 import '../../../core/models/observation.dart';
 import '../../../core/repositories/observation_repository.dart';

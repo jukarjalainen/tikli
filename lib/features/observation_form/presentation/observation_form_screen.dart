@@ -1,3 +1,6 @@
+// UI screen containing the form to save a new bird observation. 
+// Includes inputs for observation type, location (map), date, and notes.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';

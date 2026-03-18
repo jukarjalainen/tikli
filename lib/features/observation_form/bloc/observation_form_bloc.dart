@@ -1,3 +1,6 @@
+// BLoC managing the state and logic of the observation input form. 
+// Handles validation, duplicate prevention, and formatting before saving via ObservationRepository.
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';

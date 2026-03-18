@@ -1,3 +1,6 @@
+// UI screen showing the comprehensive list of bird species. 
+// Allows users to select a species for a new observation or add a rare species.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

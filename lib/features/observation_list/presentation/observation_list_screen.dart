@@ -1,3 +1,6 @@
+// Main UI screen displaying a scrollable list of saved bird observations. 
+// Reacts to state changes from the ObservationListBloc.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';

@@ -10,6 +10,7 @@ import 'features/observation_form/presentation/observation_form_screen.dart';
 import 'features/observation_list/presentation/observation_list_screen.dart';
 import 'features/observation_map/presentation/observation_map_screen.dart';
 import 'features/species_list/presentation/species_list_screen.dart';
+import 'features/export/presentation/export_screen.dart';
 
 class AppRouter {
   AppRouter({required ObservationRepository observationRepository})
@@ -50,6 +51,10 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const ObservationMapScreen(),
           settings: settings,
+        );
+        case AppRoutes.export:
+        return MaterialPageRoute(
+          builder: (_) => const ExportScreen(), 
         );
       default:
         return MaterialPageRoute(

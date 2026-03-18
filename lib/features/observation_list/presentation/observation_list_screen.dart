@@ -89,6 +89,13 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.download_rounded),
+            tooltip: 'Tulosta havainnot',
+            onPressed: () {
+              Navigator.of(context).pushNamed(AppRoutes.export);
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.map_outlined),
             onPressed:
                 () => Navigator.of(context).pushNamed(AppRoutes.observationMap),

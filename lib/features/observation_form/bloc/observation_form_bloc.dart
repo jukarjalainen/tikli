@@ -89,25 +89,25 @@ class ObservationFormBloc
     emit(state.copyWith(clearTimestamp: true));
   }
 
-  // when location is changed (either by GPS or manually), we want to update the address using reverse geocoding
+  // When the user selects a location from the map (or when GPS fetches it initially)
   Future<void> _onLocationChanged(
-    ObservationLocationChanged event,
+    ObservationFormLocationChanged event,
     Emitter<ObservationFormState> emit,
   ) async {
-    // 1. update the position in the state immediately so that the UI can reflect the new location (e.g. on map preview)
+    // 1. Update coordinates in state immediately so the map knows where we are
     emit(state.copyWith(position: event.position));
 
-    // 2. get the municipality for the new coordinates using reverse geocoding and update the state with the new address
+    // 2. Fetch the corresponding address/locality using reverse geocoding
     try {
-      final address = await _reverseGeocodingService.getAddressFromCoordinates(
+      final address = await _reverseGeocodingService.lookupDescription(
         event.position,
       );
       if (address != null) {
-        // update the state with the new address, but only if the position hasn't changed again in the meantime (to avoid showing wrong address if user quickly changes location multiple times)
+        // Update the text in UI (this is what shows in the locality field)
         emit(state.copyWith(address: address));
       }
     } catch (_) {
-      // if the reverse geocoding fails for any reason, we can choose to either keep the old address or clear it. Here we choose to keep the old address to avoid losing potentially valid location info.
+      // If geocoding fails, keep the old address or show unknown
     }
   }
 
@@ -118,11 +118,13 @@ class ObservationFormBloc
     emit(state.copyWith(clearPosition: true, clearAddress: true));
   }
 
+  // When the user manually types the locality in the dialog
   void _onAddressChanged(
-    ObservationAddressChanged event,
+    ObservationFormAddressChanged event,
     Emitter<ObservationFormState> emit,
   ) {
-    // updating the address in the state immediately without reverse geocoding, since we assume that if user is manually entering an address, they know what they are doing and don't need the app to validate it by looking up coordinates
+    // Update the address in state. You can set position to null here if you want,
+    // because a manually typed locality doesn't have an exact GPS coordinate.
     emit(state.copyWith(address: event.address));
   }
 

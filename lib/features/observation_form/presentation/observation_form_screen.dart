@@ -1,4 +1,4 @@
-// UI screen containing the form to save a new bird observation. 
+// UI screen containing the form to save a new bird observation.
 // Includes inputs for observation type, location (map), date, and notes.
 
 import 'package:flutter/material.dart';
@@ -195,48 +195,94 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                     ),
                     const SizedBox(height: 8),
                     ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.place),
+                      leading: const Icon(Icons.location_on),
                       title: const Text('Paikkakunta'),
-                      subtitle: Text(() {
-                        if (state.position == null) {
-                          return 'Ei asetettu';
+                      // show municipality or "Finding location..." if geocoding is in progress
+                      subtitle: Text(state.address ?? 'Etsitään sijaintia...'),
+                      trailing: const Icon(Icons.edit),
+                      onTap: () async {
+                        // open dialog to edit address
+                        final result = await showDialog<String>(
+                          context: context,
+                          builder: (dialogContext) {
+                            final controller = TextEditingController(
+                              text: state.address,
+                            );
+                            return AlertDialog(
+                              title: const Text('Muokkaa paikkakuntaa'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // 1. type location manually
+                                  TextField(
+                                    controller: controller,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Kirjoita kunta/paikka',
+                                      hintText: 'Esim. Oulu',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  const Text(
+                                    'TAI',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // 2. set the location on map
+                                  ElevatedButton.icon(
+                                    icon: const Icon(Icons.map),
+                                    label: const Text('Valitse kartalta'),
+                                    onPressed: () async {
+                                      // close the dialog
+                                      Navigator.of(dialogContext).pop();
+
+                                      // Open the map
+                                      final mapResult = await Navigator.of(
+                                        context,
+                                      ).pushNamed(
+                                        AppRoutes.observationMap,
+                                        arguments:
+                                            state
+                                                .position, // Current location on map
+                                      );
+
+                                      if (mapResult != null &&
+                                          context.mounted) {
+                                        // if location set using map, update the form state with new coordinates and trigger reverse geocoding to update the address
+                                        context.read<ObservationFormBloc>().add(
+                                          ObservationLocationChanged(
+                                            mapResult as LatLng,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed:
+                                      () => Navigator.of(dialogContext).pop(),
+                                  child: const Text('Peruuta'),
+                                ),
+                                ElevatedButton(
+                                  onPressed:
+                                      () => Navigator.of(
+                                        dialogContext,
+                                      ).pop(controller.text),
+                                  child: const Text('Tallenna teksti'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        // if user provided a new location manually, update the form state
+                        if (result != null && context.mounted) {
+                          context.read<ObservationFormBloc>().add(
+                            ObservationAddressChanged(result.trim()),
+                          );
                         }
-                        final trimmed = state.address?.trim() ?? '';
-                        return trimmed.isNotEmpty ? trimmed : '';
-                      }()),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (state.position != null) ...[
-                            IconButton(
-                              icon: Icon(MdiIcons.trashCan, color: Colors.red),
-                              onPressed: () {
-                                context.read<ObservationFormBloc>().add(
-                                  const ObservationFormLocationCleared(),
-                                );
-                              },
-                              tooltip: 'Tyhjennä',
-                            ),
-                            TextButton(
-                              onPressed:
-                                  () => _editCoordinates(
-                                    context,
-                                    state.position!,
-                                  ),
-                              child: const Text('Editoi'),
-                            ),
-                          ] else
-                            TextButton(
-                              onPressed:
-                                  () => _editCoordinates(
-                                    context,
-                                    const LatLng(60.1699, 24.9384),
-                                  ),
-                              child: const Text('Aseta'),
-                            ),
-                        ],
-                      ),
+                      },
                     ),
                     const SizedBox(height: 8),
                     TextFormField(

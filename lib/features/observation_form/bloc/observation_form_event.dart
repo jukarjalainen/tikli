@@ -76,3 +76,19 @@ class ObservationFormSpeciesRemoved extends ObservationFormEvent {
 class ObservationFormSubmitted extends ObservationFormEvent {
   const ObservationFormSubmitted();
 }
+
+class ObservationLocationChanged extends ObservationFormEvent {
+  const ObservationLocationChanged(this.position);
+  final LatLng position;
+
+  @override
+  List<Object?> get props => [position];
+}
+
+class ObservationAddressChanged extends ObservationFormEvent {
+  const ObservationAddressChanged(this.address);
+  final String address;
+
+  @override
+  List<Object?> get props => [address];
+}

@@ -30,12 +30,13 @@ class ObservationFormLocationRequested extends ObservationFormEvent {
 }
 
 class ObservationFormLocationChanged extends ObservationFormEvent {
-  const ObservationFormLocationChanged(this.position);
-
+  // Add isManual parameter with default value false
+  const ObservationFormLocationChanged(this.position, {this.isManual = false});
   final LatLng position;
+  final bool isManual;
 
   @override
-  List<Object?> get props => [position];
+  List<Object?> get props => [position, isManual];
 }
 
 class ObservationFormAddressChanged extends ObservationFormEvent {

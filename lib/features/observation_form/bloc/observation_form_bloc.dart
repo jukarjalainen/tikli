@@ -47,6 +47,8 @@ class ObservationFormBloc
   final LocationService _locationService;
   final ReverseGeocodingService _reverseGeocodingService =
       ReverseGeocodingService();
+  // Track if the user has manually overridden the location
+  bool _isManualLocation = false;
 
   Future<void> _onLocationRequested(
     ObservationFormLocationRequested event,
@@ -94,23 +96,28 @@ class ObservationFormBloc
     ObservationFormLocationChanged event,
     Emitter<ObservationFormState> emit,
   ) async {
-    // 1. Update coordinates in state immediately so the map knows where we are
-    emit(state.copyWith(position: event.position));
+    // If this update comes from manual map selection, mark it as manual
+    if (event.isManual) {
+      _isManualLocation = true;
+    } else if (_isManualLocation) {
+      // If the user already set a manual location, ignore automatic GPS updates completely
+      return;
+    }
 
-    // 2. Fetch the corresponding address/locality using reverse geocoding
+    emit(state.copyWith(position: event.position));
+    
     try {
-      final address = await _reverseGeocodingService.lookupDescription(
-        event.position,
-      );
+      final address = await _reverseGeocodingService.lookupDescription(event.position);
       if (address != null) {
-        // Update the text in UI (this is what shows in the locality field)
-        emit(state.copyWith(address: address));
+        // Before updating, ensure the user didn't manually type an address 
+        // while we were waiting for the geocoding API to respond.
+        if (event.isManual || !_isManualLocation) {
+          emit(state.copyWith(address: address)); 
+        }
       }
     } catch (_) {
-      // If geocoding fails, keep the old address or show unknown
     }
   }
-
   void _onLocationCleared(
     ObservationFormLocationCleared event,
     Emitter<ObservationFormState> emit,
@@ -123,9 +130,12 @@ class ObservationFormBloc
     ObservationFormAddressChanged event,
     Emitter<ObservationFormState> emit,
   ) {
-    // Update the address in state. You can set position to null here if you want,
-    // because a manually typed locality doesn't have an exact GPS coordinate.
-    emit(state.copyWith(address: event.address));
+    // Mark that the user has manually provided the address
+    _isManualLocation = true;
+    
+    emit(state.copyWith(
+      address: event.address,
+    ));
   }
 
   void _onNotesChanged(

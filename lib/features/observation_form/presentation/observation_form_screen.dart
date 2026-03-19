@@ -229,7 +229,7 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                                     final nextCenter = camera.center;
                                     _mapMoveDebounce?.cancel();
                                     _mapMoveDebounce = Timer(
-                                      const Duration(milliseconds: 250),
+                                      const Duration(seconds: 1),
                                       () {
                                         if (!mounted) {
                                           return;

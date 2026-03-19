@@ -15,7 +15,7 @@ class ReverseGeocodingService {
       'lat': position.latitude.toString(),
       'lon': position.longitude.toString(),
       'zoom': '10',
-      'municipalitydetails': '1',
+      'addressdetails': '1',
     });
 
     final response = await _httpClient.get(
@@ -32,8 +32,8 @@ class ReverseGeocodingService {
 
     final Map<String, dynamic> data =
         jsonDecode(response.body) as Map<String, dynamic>;
-    final municipality = data['municipality'];
-    if (municipality is Map<String, dynamic>) {
+    final address = data['address'];
+    if (address is Map<String, dynamic>) {
       final fields = [
         'city',
         'town',
@@ -44,7 +44,7 @@ class ReverseGeocodingService {
         'state',
       ];
       for (final key in fields) {
-        final value = municipality[key];
+        final value = address[key];
         if (value is String && value.isNotEmpty) {
           return value;
         }

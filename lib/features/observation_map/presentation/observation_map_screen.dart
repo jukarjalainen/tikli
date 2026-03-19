@@ -1,4 +1,4 @@
-// UI screen providing an interactive map interface. 
+// UI screen providing an interactive map interface.
 // Allows users to precisely select and confirm the geographical location of their observation.
 
 import 'package:flutter/material.dart';

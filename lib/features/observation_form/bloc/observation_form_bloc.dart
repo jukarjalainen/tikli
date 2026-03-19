@@ -9,6 +9,7 @@ import '../../../core/enums/observation_type.dart';
 import '../../../core/models/species.dart';
 import '../../../core/repositories/observation_repository.dart';
 import '../../../core/services/location_service.dart';
+import '../../../core/services/reverse_geocoding_service.dart';
 
 part 'observation_form_event.dart';
 part 'observation_form_state.dart';
@@ -18,11 +19,13 @@ class ObservationFormBloc
   ObservationFormBloc({
     required ObservationRepository observationRepository,
     required LocationService locationService,
+    required ReverseGeocodingService reverseGeocodingService,
     required List<Species> selectedSpecies,
     LatLng? initialPosition,
     DateTime? initialTimestamp,
   }) : _observationRepository = observationRepository,
        _locationService = locationService,
+       _reverseGeocodingService = reverseGeocodingService,
        super(
          ObservationFormState(
            selectedSpecies: selectedSpecies,
@@ -43,6 +46,7 @@ class ObservationFormBloc
 
   final ObservationRepository _observationRepository;
   final LocationService _locationService;
+  final ReverseGeocodingService _reverseGeocodingService;
 
   Future<void> _onLocationRequested(
     ObservationFormLocationRequested event,
@@ -52,10 +56,7 @@ class ObservationFormBloc
     if (resolved == null) {
       return;
     }
-    if (state.position == resolved) {
-      return;
-    }
-    emit(state.copyWith(position: resolved));
+    add(ObservationFormLocationChanged(resolved));
   }
 
   void _onTypeToggled(
@@ -85,11 +86,34 @@ class ObservationFormBloc
     emit(state.copyWith(clearTimestamp: true));
   }
 
-  void _onLocationChanged(
+  Future<void> _onLocationChanged(
     ObservationFormLocationChanged event,
     Emitter<ObservationFormState> emit,
-  ) {
-    emit(state.copyWith(position: event.position));
+  ) async {
+    if (state.position == event.position) {
+      return;
+    }
+
+    emit(state.copyWith(position: event.position, clearmunicipality: true));
+
+    String? municipality;
+    try {
+      municipality = await _reverseGeocodingService.lookupDescription(
+        event.position,
+      );
+    } catch (_) {
+      municipality = null;
+    }
+    final trimmed = municipality?.trim();
+
+    if (state.position != event.position) {
+      return;
+    }
+    if (trimmed == null || trimmed.isEmpty) {
+      return;
+    }
+
+    emit(state.copyWith(municipality: trimmed));
   }
 
   void _onLocationCleared(

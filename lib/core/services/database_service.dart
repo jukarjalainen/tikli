@@ -39,7 +39,7 @@ class DatabaseService {
         timestamp TEXT,               -- Time when the observation was made
         latitude REAL,                -- Latitude of the observation location
         longitude REAL,               -- Longitude of the observation location
-        municipality TEXT,                 -- municipality or description of the location
+        municipality TEXT             -- municipality or description of the location
       )
     ''');
   }

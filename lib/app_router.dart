@@ -5,6 +5,7 @@ import 'core/constants/app_routes.dart';
 import 'core/models/species.dart';
 import 'core/repositories/observation_repository.dart';
 import 'core/services/location_service.dart';
+import 'core/services/reverse_geocoding_service.dart';
 import 'features/observation_form/bloc/observation_form_bloc.dart';
 import 'features/observation_form/presentation/observation_form_screen.dart';
 import 'features/observation_list/presentation/observation_list_screen.dart';
@@ -30,11 +31,14 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (context) {
             final locationService = context.read<LocationService>();
+            final reverseGeocodingService =
+                context.read<ReverseGeocodingService>();
             return BlocProvider(
               create:
                   (_) => ObservationFormBloc(
                     observationRepository: _observationRepository,
                     locationService: locationService,
+                    reverseGeocodingService: reverseGeocodingService,
                     selectedSpecies: species,
                   )..add(const ObservationFormLocationRequested()),
               child: ObservationFormScreen(selectedSpecies: species),
@@ -52,10 +56,8 @@ class AppRouter {
           builder: (_) => const ObservationMapScreen(),
           settings: settings,
         );
-        case AppRoutes.export:
-        return MaterialPageRoute(
-          builder: (_) => const ExportScreen(), 
-        );
+      case AppRoutes.export:
+        return MaterialPageRoute(builder: (_) => const ExportScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => const SpeciesListScreen(),

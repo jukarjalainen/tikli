@@ -40,7 +40,6 @@ class DatabaseService {
         latitude REAL,                -- Latitude of the observation location
         longitude REAL,               -- Longitude of the observation location
         address TEXT,                 -- Address or description of the location
-        notes TEXT                    -- Additional notes about the observation
       )
     ''');
   }

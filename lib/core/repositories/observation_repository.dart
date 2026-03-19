@@ -44,7 +44,6 @@ class ObservationRepository {
     DateTime? timestamp,
     LatLng? position,
     String? address,
-    String? notes,
   }) async {
     final locationDescription =
         position != null
@@ -61,7 +60,6 @@ class ObservationRepository {
       timestamp: timestamp ?? DateTime.now(),
       position: position,
       address: locationDescription,
-      notes: notes,
     );
 
     _observations.add(observation);

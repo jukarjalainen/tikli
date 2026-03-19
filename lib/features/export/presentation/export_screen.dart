@@ -83,7 +83,6 @@ class ExportScreen extends StatelessWidget {
         'latitude': obs.position?.latitude,
         'longitude': obs.position?.longitude,
         'address': obs.address,
-        'notes': obs.notes,
       };
     }).toList();
     return jsonEncode(list);

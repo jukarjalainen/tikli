@@ -1,5 +1,5 @@
-// UI screen containing the form to save a new bird observation. 
-// Includes inputs for observation type, location (map), date, and notes.
+// UI screen containing the form to save a new bird observation.
+// Includes inputs for observation type, location (map), date.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -239,30 +239,8 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    TextFormField(
-                      initialValue: state.address ?? '',
-                      decoration: const InputDecoration(
-                        labelText: 'Paikan kuvaus',
-                        prefixIcon: Icon(Icons.map),
-                      ),
-                      onChanged:
-                          (value) => context.read<ObservationFormBloc>().add(
-                            ObservationFormAddressChanged(value),
-                          ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      initialValue: state.notes ?? '',
-                      decoration: const InputDecoration(
-                        labelText: 'Muistiinpanot',
-                        prefixIcon: Icon(Icons.edit),
-                      ),
-                      maxLines: 3,
-                      onChanged:
-                          (value) => context.read<ObservationFormBloc>().add(
-                            ObservationFormNotesChanged(value),
-                          ),
-                    ),
+
+
                     const SizedBox(height: 16),
                     if (state.position != null)
                       AspectRatio(

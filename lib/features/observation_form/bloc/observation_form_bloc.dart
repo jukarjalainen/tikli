@@ -37,7 +37,6 @@ class ObservationFormBloc
     on<ObservationFormLocationChanged>(_onLocationChanged);
     on<ObservationFormLocationCleared>(_onLocationCleared);
     on<ObservationFormAddressChanged>(_onAddressChanged);
-    on<ObservationFormNotesChanged>(_onNotesChanged);
     on<ObservationFormSpeciesRemoved>(_onSpeciesRemoved);
     on<ObservationFormSubmitted>(_onSubmitted);
   }
@@ -105,13 +104,6 @@ class ObservationFormBloc
     Emitter<ObservationFormState> emit,
   ) {
     emit(state.copyWith(address: event.address));
-  }
-
-  void _onNotesChanged(
-    ObservationFormNotesChanged event,
-    Emitter<ObservationFormState> emit,
-  ) {
-    emit(state.copyWith(notes: event.notes));
   }
 
   void _onSpeciesRemoved(
@@ -213,7 +205,6 @@ class ObservationFormBloc
             position: state.position,
             address:
                 state.address?.trim().isEmpty == true ? null : state.address,
-            notes: state.notes?.trim().isEmpty == true ? null : state.notes,
           );
         }
       }

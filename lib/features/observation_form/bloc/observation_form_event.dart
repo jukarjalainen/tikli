@@ -47,14 +47,6 @@ class ObservationFormAddressChanged extends ObservationFormEvent {
   List<Object?> get props => [address];
 }
 
-class ObservationFormNotesChanged extends ObservationFormEvent {
-  const ObservationFormNotesChanged(this.notes);
-
-  final String notes;
-
-  @override
-  List<Object?> get props => [notes];
-}
 
 class ObservationFormTimestampCleared extends ObservationFormEvent {
   const ObservationFormTimestampCleared();

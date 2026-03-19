@@ -16,7 +16,6 @@ class Observation extends Equatable {
     required this.type, // The type/category of the observation
     this.timestamp, // Optional timestamp for when the observation occurred
     this.position, // Optional geographical position (latitude and longitude)
-    this.notes, // Optional notes about the observation
     this.address, // Optional address or location description
   });
 
@@ -27,7 +26,6 @@ class Observation extends Equatable {
   final DateTime? timestamp; // The date and time of the observation
   final LatLng? position; // The geographical position of the observation
   final String? address; // The address or description of the location
-  final String? notes; // Additional notes about the observation
 
   // Method to create a copy of the current Observation with modified fields
   Observation copyWith({
@@ -37,7 +35,6 @@ class Observation extends Equatable {
     DateTime? timestamp,
     LatLng? position,
     String? address,
-    String? notes,
   }) {
     return Observation(
       id:
@@ -49,7 +46,6 @@ class Observation extends Equatable {
           timestamp ?? this.timestamp, // Use the new timestamp if provided
       position: position ?? this.position, // Use the new position if provided
       address: address ?? this.address, // Use the new address if provided
-      notes: notes ?? this.notes, // Use the new notes if provided
     );
   }
 
@@ -62,7 +58,6 @@ class Observation extends Equatable {
     timestamp,
     position,
     address,
-    notes,
   ];
 
   // Converts the Observation object into a map for database storage
@@ -77,7 +72,6 @@ class Observation extends Equatable {
       'longitude':
           position?.longitude, // Store longitude if position is available
       'address': address, // Store the address
-      'notes': notes, // Store the notes
     };
   }
 
@@ -96,7 +90,6 @@ class Observation extends Equatable {
               ? LatLng(map['latitude'] as double, map['longitude'] as double)
               : null,
       address: map['address'] as String?,
-      notes: map['notes'] as String?,
     );
   }
 }

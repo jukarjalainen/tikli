@@ -1,4 +1,4 @@
-// Service class handling all local SQLite database operations. 
+// Service class handling all local SQLite database operations.
 // Responsible for initializing the database, creating tables, and executing CRUD queries.
 
 import 'package:sqflite/sqflite.dart';
@@ -39,7 +39,7 @@ class DatabaseService {
         timestamp TEXT,               -- Time when the observation was made
         latitude REAL,                -- Latitude of the observation location
         longitude REAL,               -- Longitude of the observation location
-        address TEXT,                 -- Address or description of the location
+        municipality TEXT,                 -- municipality or description of the location
       )
     ''');
   }
@@ -55,10 +55,10 @@ class DatabaseService {
   Future<void> insertObservation(Map<String, dynamic> observationMap) async {
     final db = await database;
     await db.insert(
-      'observations', 
+      'observations',
       observationMap,
       // If an observation with the same ID already exists, replace it with the new one
-      conflictAlgorithm: ConflictAlgorithm.replace, 
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
@@ -71,7 +71,7 @@ class DatabaseService {
   /// [id] The ID of the observation to delete. This should be a unique
   /// identifier for the observation in the database.
   Future<void> deleteObservation(String id) async {
-  final db = await database;
-  await db.delete('observations', where: 'id = ?', whereArgs: [id]);
-}
+    final db = await database;
+    await db.delete('observations', where: 'id = ?', whereArgs: [id]);
+  }
 }

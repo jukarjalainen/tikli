@@ -1,4 +1,4 @@
-// BLoC managing the state and logic of the observation input form. 
+// BLoC managing the state and logic of the observation input form.
 // Handles validation, duplicate prevention, and formatting before saving via ObservationRepository.
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -36,7 +36,7 @@ class ObservationFormBloc
     on<ObservationFormTimestampCleared>(_onTimestampCleared);
     on<ObservationFormLocationChanged>(_onLocationChanged);
     on<ObservationFormLocationCleared>(_onLocationCleared);
-    on<ObservationFormAddressChanged>(_onAddressChanged);
+    on<ObservationFormmunicipalityChanged>(_onmunicipalityChanged);
     on<ObservationFormSpeciesRemoved>(_onSpeciesRemoved);
     on<ObservationFormSubmitted>(_onSubmitted);
   }
@@ -96,14 +96,14 @@ class ObservationFormBloc
     ObservationFormLocationCleared event,
     Emitter<ObservationFormState> emit,
   ) {
-    emit(state.copyWith(clearPosition: true, clearAddress: true));
+    emit(state.copyWith(clearPosition: true, clearmunicipality: true));
   }
 
-  void _onAddressChanged(
-    ObservationFormAddressChanged event,
+  void _onmunicipalityChanged(
+    ObservationFormmunicipalityChanged event,
     Emitter<ObservationFormState> emit,
   ) {
-    emit(state.copyWith(address: event.address));
+    emit(state.copyWith(municipality: event.municipality));
   }
 
   void _onSpeciesRemoved(
@@ -161,9 +161,8 @@ class ObservationFormBloc
         final typesToSave = Set<ObservationType>.from(state.selectedTypes);
 
         // Etsitään tälle kyseiselle lajille jo olemassa olevat havainnot
-        final existingObs = allObservations
-            .where((o) => o.species.id == species.id)
-            .toList();
+        final existingObs =
+            allObservations.where((o) => o.species.id == species.id).toList();
 
         // 1. Poista elis tallennettavista, jos se on jo havaittu
         if (existingObs.any((o) => o.type == ObservationType.life)) {
@@ -178,9 +177,11 @@ class ObservationFormBloc
         // 3. Poista vuodenpinna, jos se on jo havaittu TÄNÄ VUONNA
         if (state.timestamp != null) {
           final currentYear = state.timestamp!.year;
-          if (existingObs.any((o) =>
-              o.type == ObservationType.yearly &&
-              o.timestamp?.year == currentYear)) {
+          if (existingObs.any(
+            (o) =>
+                o.type == ObservationType.yearly &&
+                o.timestamp?.year == currentYear,
+          )) {
             typesToSave.remove(ObservationType.yearly);
           }
         }
@@ -189,7 +190,7 @@ class ObservationFormBloc
         // (Jos käyttäjä valitsi vuosi- tai pihapinnan, mutta lajista ei ole elistä olemassa)
         final requiresLifeEntry =
             (state.selectedTypes.contains(ObservationType.yearly) ||
-             state.selectedTypes.contains(ObservationType.yard)) &&
+                state.selectedTypes.contains(ObservationType.yard)) &&
             !existingObs.any((o) => o.type == ObservationType.life);
 
         if (requiresLifeEntry) {
@@ -203,8 +204,10 @@ class ObservationFormBloc
             type: type,
             timestamp: state.timestamp,
             position: state.position,
-            address:
-                state.address?.trim().isEmpty == true ? null : state.address,
+            municipality:
+                state.municipality?.trim().isEmpty == true
+                    ? null
+                    : state.municipality,
           );
         }
       }

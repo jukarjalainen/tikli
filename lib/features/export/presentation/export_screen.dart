@@ -25,13 +25,12 @@ class ExportScreen extends StatelessWidget {
     final buffer = StringBuffer();
 
     // 1. sort the observations by timestamp (oldest first), but keep those without timestamp at the end
-    final sortedObs = List<Observation>.from(observations)
-      ..sort((a, b) {
-        if (a.timestamp == null && b.timestamp == null) return 0;
-        if (a.timestamp == null) return -1;
-        if (b.timestamp == null) return 1;
-        return a.timestamp!.compareTo(b.timestamp!);
-      });
+    final sortedObs = List<Observation>.from(observations)..sort((a, b) {
+      if (a.timestamp == null && b.timestamp == null) return 0;
+      if (a.timestamp == null) return -1;
+      if (b.timestamp == null) return 1;
+      return a.timestamp!.compareTo(b.timestamp!);
+    });
 
     // 2. set up the sections we want to print, in the desired order
     final sections = [
@@ -53,11 +52,13 @@ class ExportScreen extends StatelessWidget {
 
       for (final obs in typeObs) {
         final dateStr = _formatDate(obs.timestamp);
-        final addressStr = obs.address ?? '';
+        final municipalityStr = obs.municipality ?? '';
 
         // e.g., 1. talitiainen 1.1.2026 oulu
-        final line = '$index. ${obs.species.commonName.toLowerCase()} $dateStr $addressStr'.trim();
-        
+        final line =
+            '$index. ${obs.species.commonName.toLowerCase()} $dateStr $municipalityStr'
+                .trim();
+
         // convert multiple spaces to a single space
         buffer.writeln(line.replaceAll(RegExp(r'\s+'), ' '));
         index++;
@@ -74,36 +75,47 @@ class ExportScreen extends StatelessWidget {
 
   // creates a JSON string representing the list of observations, suitable for backup/restore purposes
   String _generateJsonContent(List<Observation> observations) {
-    final list = observations.map((obs) {
-      return {
-        'id': obs.id,
-        'speciesId': obs.species.id,
-        'type': obs.type.storageKey, // use storageKey to identify the type in JSON
-        'timestamp': obs.timestamp?.toIso8601String(),
-        'latitude': obs.position?.latitude,
-        'longitude': obs.position?.longitude,
-        'address': obs.address,
-      };
-    }).toList();
+    final list =
+        observations.map((obs) {
+          return {
+            'id': obs.id,
+            'speciesId': obs.species.id,
+            'type':
+                obs
+                    .type
+                    .storageKey, // use storageKey to identify the type in JSON
+            'timestamp': obs.timestamp?.toIso8601String(),
+            'latitude': obs.position?.latitude,
+            'longitude': obs.position?.longitude,
+            'municipality': obs.municipality,
+          };
+        }).toList();
     return jsonEncode(list);
   }
 
   // saves the given content to a temporary file and shares it using the system's share dialog
-  Future<void> _exportFile(BuildContext context, String content, String fileName, String mimeType) async {
+  Future<void> _exportFile(
+    BuildContext context,
+    String content,
+    String fileName,
+    String mimeType,
+  ) async {
     try {
       final directory = await getTemporaryDirectory();
       final file = File('${directory.path}/$fileName');
       await file.writeAsString(content);
 
       final xFile = XFile(file.path, mimeType: mimeType);
-      
+
       // share the file using the system's share dialog
-      await Share.shareXFiles([xFile], text: 'Tässä Tikli-sovelluksen havaintoni!');
+      await Share.shareXFiles([
+        xFile,
+      ], text: 'Tässä Tikli-sovelluksen havaintoni!');
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Virhe viennissä: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Virhe viennissä: $e')));
       }
     }
   }
@@ -115,9 +127,7 @@ class ExportScreen extends StatelessWidget {
     final observations = repository.getAll();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tulosta havainnot'),
-      ),
+      appBar: AppBar(title: const Text('Tulosta havainnot')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -130,7 +140,12 @@ class ExportScreen extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: () async {
                 final txtContent = _generateTextContent(observations);
-                await _exportFile(context, txtContent, 'tikli_havainnot.txt', 'text/plain');
+                await _exportFile(
+                  context,
+                  txtContent,
+                  'tikli_havainnot.txt',
+                  'text/plain',
+                );
               },
               icon: const Icon(Icons.description),
               label: const Text('Tulosta .txt (Tekstitiedosto)'),
@@ -139,7 +154,12 @@ class ExportScreen extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: () async {
                 final jsonContent = _generateJsonContent(observations);
-                await _exportFile(context, jsonContent, 'tikli_backup.json', 'application/json');
+                await _exportFile(
+                  context,
+                  jsonContent,
+                  'tikli_backup.json',
+                  'application/json',
+                );
               },
               icon: const Icon(Icons.code),
               label: const Text('Tulosta .json (Varmuuskopio)'),

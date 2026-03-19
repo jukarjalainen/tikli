@@ -8,7 +8,7 @@ class ObservationFormState extends Equatable {
     this.position,
     this.timestamp,
     Set<ObservationType>? selectedTypes,
-    this.address,
+    this.municipality,
     this.status = ObservationFormStatus.editing,
     this.errorMessage,
   }) : selectedSpecies = List.unmodifiable(selectedSpecies),
@@ -18,7 +18,7 @@ class ObservationFormState extends Equatable {
   final Set<ObservationType> selectedTypes;
   final LatLng? position;
   final DateTime? timestamp;
-  final String? address;
+  final String? municipality;
   final ObservationFormStatus status;
   final String? errorMessage;
 
@@ -29,8 +29,8 @@ class ObservationFormState extends Equatable {
     bool clearPosition = false,
     DateTime? timestamp,
     bool clearTimestamp = false,
-    String? address,
-    bool clearAddress = false,
+    String? municipality,
+    bool clearmunicipality = false,
     ObservationFormStatus? status,
     String? errorMessage,
   }) {
@@ -42,7 +42,8 @@ class ObservationFormState extends Equatable {
       selectedTypes: selectedTypes ?? this.selectedTypes,
       position: clearPosition ? null : (position ?? this.position),
       timestamp: clearTimestamp ? null : (timestamp ?? this.timestamp),
-      address: clearAddress ? null : (address ?? this.address),
+      municipality:
+          clearmunicipality ? null : (municipality ?? this.municipality),
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
     );
@@ -56,7 +57,7 @@ class ObservationFormState extends Equatable {
     selectedTypes,
     position,
     timestamp,
-    address,
+    municipality,
     status,
     errorMessage,
   ];

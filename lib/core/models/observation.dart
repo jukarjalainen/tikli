@@ -1,4 +1,4 @@
-// Data model representing a single bird observation. 
+// Data model representing a single bird observation.
 // Contains properties like species, timestamp, location, and observation type.
 
 import 'package:equatable/equatable.dart';
@@ -16,7 +16,7 @@ class Observation extends Equatable {
     required this.type, // The type/category of the observation
     this.timestamp, // Optional timestamp for when the observation occurred
     this.position, // Optional geographical position (latitude and longitude)
-    this.address, // Optional address or location description
+    this.municipality, // Optional municipality or location description
   });
 
   // Fields representing the properties of an observation
@@ -25,7 +25,7 @@ class Observation extends Equatable {
   final ObservationType type; // The type of observation (e.g., sighting, sound)
   final DateTime? timestamp; // The date and time of the observation
   final LatLng? position; // The geographical position of the observation
-  final String? address; // The address or description of the location
+  final String? municipality; // The municipality or description of the location
 
   // Method to create a copy of the current Observation with modified fields
   Observation copyWith({
@@ -34,7 +34,7 @@ class Observation extends Equatable {
     ObservationType? type,
     DateTime? timestamp,
     LatLng? position,
-    String? address,
+    String? municipality,
   }) {
     return Observation(
       id:
@@ -45,7 +45,9 @@ class Observation extends Equatable {
       timestamp:
           timestamp ?? this.timestamp, // Use the new timestamp if provided
       position: position ?? this.position, // Use the new position if provided
-      address: address ?? this.address, // Use the new address if provided
+      municipality:
+          municipality ??
+          this.municipality, // Use the new municipality if provided
     );
   }
 
@@ -57,7 +59,7 @@ class Observation extends Equatable {
     type,
     timestamp,
     position,
-    address,
+    municipality,
   ];
 
   // Converts the Observation object into a map for database storage
@@ -71,7 +73,7 @@ class Observation extends Equatable {
       'latitude': position?.latitude, // Store latitude if position is available
       'longitude':
           position?.longitude, // Store longitude if position is available
-      'address': address, // Store the address
+      'municipality': municipality, // Store the municipality
     };
   }
 
@@ -89,7 +91,7 @@ class Observation extends Equatable {
           map['latitude'] != null && map['longitude'] != null
               ? LatLng(map['latitude'] as double, map['longitude'] as double)
               : null,
-      address: map['address'] as String?,
+      municipality: map['municipality'] as String?,
     );
   }
 }

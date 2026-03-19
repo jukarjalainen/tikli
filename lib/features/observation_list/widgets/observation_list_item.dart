@@ -43,7 +43,7 @@ class _ObservationListItemState extends State<ObservationListItem> {
   @override
   Widget build(BuildContext context) {
     final commonName = widget.observation.species.commonName;
-    final rawLocation = widget.observation.address?.trim() ?? '';
+    final rawLocation = widget.observation.municipality?.trim() ?? '';
     final location = rawLocation.isNotEmpty ? rawLocation : '';
     final metadataStyle = Theme.of(context).textTheme.bodySmall;
 
@@ -52,7 +52,9 @@ class _ObservationListItemState extends State<ObservationListItem> {
       onTap: _showDelete ? _handleDismissDelete : null,
       tileColor:
           _showDelete
-              ? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.2)
+              ? Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest.withOpacity(0.2)
               : null,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       title: Column(

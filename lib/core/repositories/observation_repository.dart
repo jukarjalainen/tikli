@@ -1,4 +1,4 @@
-// Repository class managing bird observation data. 
+// Repository class managing bird observation data.
 // Acts as the single source of truth by coordinating data between local memory and the SQLite DatabaseService.
 
 import 'dart:async';
@@ -32,7 +32,7 @@ class ObservationRepository {
   final Map<String, String?> _reverseGeocodeCache = {};
 
   Stream<List<Observation>> watchAll() async* {
-    yield [..._observations]; 
+    yield [..._observations];
     yield* _controller.stream;
   }
 
@@ -43,15 +43,15 @@ class ObservationRepository {
     required ObservationType type,
     DateTime? timestamp,
     LatLng? position,
-    String? address,
+    String? municipality,
   }) async {
     final locationDescription =
         position != null
-            ? await _resolveAddress(
+            ? await _resolvemunicipality(
               position: position,
-              providedAddress: address,
+              providedmunicipality: municipality,
             )
-            : address;
+            : municipality;
     final id = _generateId(species.id, timestamp ?? DateTime.now(), type);
     final observation = Observation(
       id: id,
@@ -59,7 +59,7 @@ class ObservationRepository {
       type: type,
       timestamp: timestamp ?? DateTime.now(),
       position: position,
-      address: locationDescription,
+      municipality: locationDescription,
     );
 
     _observations.add(observation);
@@ -90,12 +90,13 @@ class ObservationRepository {
     }
   }
 
-  Future<String?> _resolveAddress({
+  Future<String?> _resolvemunicipality({
     required LatLng position,
-    required String? providedAddress,
+    required String? providedmunicipality,
   }) async {
-    if (providedAddress != null && providedAddress.trim().isNotEmpty) {
-      return providedAddress;
+    if (providedmunicipality != null &&
+        providedmunicipality.trim().isNotEmpty) {
+      return providedmunicipality;
     }
 
     final cacheKey = _cacheKey(position);

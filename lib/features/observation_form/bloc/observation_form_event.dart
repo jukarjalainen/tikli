@@ -38,15 +38,14 @@ class ObservationFormLocationChanged extends ObservationFormEvent {
   List<Object?> get props => [position];
 }
 
-class ObservationFormAddressChanged extends ObservationFormEvent {
-  const ObservationFormAddressChanged(this.address);
+class ObservationFormmunicipalityChanged extends ObservationFormEvent {
+  const ObservationFormmunicipalityChanged(this.municipality);
 
-  final String address;
+  final String municipality;
 
   @override
-  List<Object?> get props => [address];
+  List<Object?> get props => [municipality];
 }
-
 
 class ObservationFormTimestampCleared extends ObservationFormEvent {
   const ObservationFormTimestampCleared();

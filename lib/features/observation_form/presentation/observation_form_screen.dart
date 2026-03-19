@@ -193,54 +193,6 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                         bloc.add(ObservationFormTimestampChanged(newDateTime));
                       },
                     ),
-                    const SizedBox(height: 8),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.place),
-                      title: const Text('Paikkakunta'),
-                      subtitle: Text(() {
-                        if (state.position == null) {
-                          return 'Ei asetettu';
-                        }
-                        final trimmed = state.address?.trim() ?? '';
-                        return trimmed.isNotEmpty ? trimmed : '';
-                      }()),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (state.position != null) ...[
-                            IconButton(
-                              icon: Icon(MdiIcons.trashCan, color: Colors.red),
-                              onPressed: () {
-                                context.read<ObservationFormBloc>().add(
-                                  const ObservationFormLocationCleared(),
-                                );
-                              },
-                              tooltip: 'Tyhjennä',
-                            ),
-                            TextButton(
-                              onPressed:
-                                  () => _editCoordinates(
-                                    context,
-                                    state.position!,
-                                  ),
-                              child: const Text('Editoi'),
-                            ),
-                          ] else
-                            TextButton(
-                              onPressed:
-                                  () => _editCoordinates(
-                                    context,
-                                    const LatLng(60.1699, 24.9384),
-                                  ),
-                              child: const Text('Aseta'),
-                            ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-
                     const SizedBox(height: 16),
                     if (state.position != null)
                       AspectRatio(

@@ -96,28 +96,29 @@ class ObservationFormBloc
     ObservationFormLocationChanged event,
     Emitter<ObservationFormState> emit,
   ) async {
-    // If this update comes from manual map selection, mark it as manual
-    if (event.isManual) {
-      _isManualLocation = true;
-    } else if (_isManualLocation) {
-      // If the user already set a manual location, ignore automatic GPS updates completely
+    if (!event.isManual && _isManualLocation) {
       return;
+    }
+    if (event.isManual) {
+      _isManualLocation = false;
     }
 
     emit(state.copyWith(position: event.position));
-    
+
     try {
-      final address = await _reverseGeocodingService.lookupDescription(event.position);
+      final address = await _reverseGeocodingService.lookupDescription(
+        event.position,
+      );
       if (address != null) {
-        // Before updating, ensure the user didn't manually type an address 
+        // Before updating, ensure the user didn't manually type an address
         // while we were waiting for the geocoding API to respond.
-        if (event.isManual || !_isManualLocation) {
-          emit(state.copyWith(address: address)); 
+        if (!_isManualLocation) {
+          emit(state.copyWith(address: address));
         }
       }
-    } catch (_) {
-    }
+    } catch (_) {}
   }
+
   void _onLocationCleared(
     ObservationFormLocationCleared event,
     Emitter<ObservationFormState> emit,
@@ -132,10 +133,13 @@ class ObservationFormBloc
   ) {
     // Mark that the user has manually provided the address
     _isManualLocation = true;
-    
-    emit(state.copyWith(
-      address: event.address,
-    ));
+
+    emit(
+      state.copyWith(
+        address: event.address.isNotEmpty ? event.address : null,
+        clearPosition: true,
+      ),
+    );
   }
 
   void _onNotesChanged(

@@ -1,6 +1,8 @@
 // UI screen containing the form to save a new bird observation.
 // Includes inputs for observation type, location (map), date.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -24,11 +26,19 @@ class ObservationFormScreen extends StatefulWidget {
 
 class _ObservationFormScreenState extends State<ObservationFormScreen> {
   late final DateFormat _dateFormat;
+  final MapController _mapController = MapController();
+  Timer? _mapMoveDebounce;
 
   @override
   void initState() {
     super.initState();
     _dateFormat = DateFormat('d.M.yyyy HH:mm');
+  }
+
+  @override
+  void dispose() {
+    _mapMoveDebounce?.cancel();
+    super.dispose();
   }
 
   @override
@@ -199,43 +209,86 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                         aspectRatio: 3 / 2,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: FlutterMap(
-                            key: ValueKey(
-                              'map-${state.position!.latitude.toStringAsFixed(4)}-${state.position!.longitude.toStringAsFixed(4)}',
-                            ),
-                            options: MapOptions(
-                              initialCenter: state.position!,
-                              initialZoom: 12,
-                              interactionOptions: const InteractionOptions(
-                                flags:
-                                    InteractiveFlag.all &
-                                    ~InteractiveFlag.rotate,
-                              ),
-                            ),
+                          child: Stack(
+                            alignment: Alignment.center,
                             children: [
-                              TileLayer(
-                                urlTemplate:
-                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                userAgentPackageName: 'fi.tikli.app',
-                              ),
-                              MarkerLayer(
-                                markers: [
-                                  Marker(
-                                    point: state.position!,
-                                    width: 40,
-                                    height: 40,
-                                    child: const Icon(
-                                      Icons.location_pin,
-                                      color: Colors.red,
-                                      size: 40,
-                                    ),
+                              FlutterMap(
+                                mapController: _mapController,
+                                options: MapOptions(
+                                  initialCenter: state.position!,
+                                  initialZoom: 12,
+                                  interactionOptions: const InteractionOptions(
+                                    flags:
+                                        InteractiveFlag.all &
+                                        ~InteractiveFlag.rotate,
+                                  ),
+                                  onPositionChanged: (camera, hasGesture) {
+                                    if (!hasGesture) {
+                                      return;
+                                    }
+                                    final nextCenter = camera.center;
+                                    _mapMoveDebounce?.cancel();
+                                    _mapMoveDebounce = Timer(
+                                      const Duration(seconds: 1),
+                                      () {
+                                        if (!mounted) {
+                                          return;
+                                        }
+                                        context.read<ObservationFormBloc>().add(
+                                          ObservationFormLocationChanged(
+                                            nextCenter,
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                                children: [
+                                  TileLayer(
+                                    urlTemplate:
+                                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                    userAgentPackageName: 'fi.tikli.app',
                                   ),
                                 ],
+                              ),
+                              IgnorePointer(
+                                child: Container(
+                                  width: 34,
+                                  height: 34,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 4,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.add,
+                                    size: 20,
+                                    color: Colors.red,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
+                    if (state.position != null) ...[
+                      const SizedBox(height: 8),
+                      
+                      if (state.municipality != null &&
+                          state.municipality!.trim().isNotEmpty)
+                        Text(
+                          'Kunta: ${state.municipality}',
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                    ],
                   ],
                 ),
               ),

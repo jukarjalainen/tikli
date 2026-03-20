@@ -216,7 +216,7 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                                 mapController: _mapController,
                                 options: MapOptions(
                                   initialCenter: state.position!,
-                                  initialZoom: 12,
+                                  initialZoom: 15,
                                   interactionOptions: const InteractionOptions(
                                     flags:
                                         InteractiveFlag.all &
@@ -281,7 +281,7 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                       ),
                     if (state.position != null) ...[
                       const SizedBox(height: 8),
-                      
+
                       if (state.municipality != null &&
                           state.municipality!.trim().isNotEmpty)
                         Text(

@@ -14,6 +14,8 @@ Tikli (Finnish for Goldfinch) is a Flutter-based mobile application designed for
 - Interactive Map: All saved observations are pinned on a dynamic map for visual tracking
 - Comprehensive History: View and manage all past observations in categorized lists.
 - Data Portability: Export your entire observation history as a text file for external use.
+
+- https://github.com/user-attachments/assets/0dfa7d91-2603-4d8f-8d35-95fd74af5301
   
 ### Tech stack
 - State Management: flutter_bloc (v9.0.0) for a predictable and scalable architecture.

@@ -1,16 +1,32 @@
-# tikli
+# Tikli – Bird Observation Tracker
 
-A new Flutter project.
+Tikli (Finnish for Goldfinch) is a Flutter-based mobile application designed for bird enthusiasts to record, track, and visualize their sightings. The app focuses on localized Finnish bird species and provides a seamless workflow from observation to data export.
 
-## Getting Started
+## Key Features
 
-This project is a starting point for a Flutter application.
+- Fast Species Selection: Users can choose from a curated list of common Finnish bird species without havin to type anything. A manual entry option is available for rare sightings.
+- Observations are categorized into three specific types
+   - Vuodenpinna (Yearly)
+   - Pihapinna (Yard)
+   - Elämänpinna (Life)
 
-A few resources to get you started if this is your first Flutter project:
+- Geolocation Integration: Automatically fetches the user's current location and timestamp for each entry
+- Interactive Map: All saved observations are pinned on a dynamic map for visual tracking
+- Comprehensive History: View and manage all past observations in categorized lists.
+- Data Portability: Export your entire observation history as a text file for external use.
+  
+### Tech stack
+- State Management: flutter_bloc (v9.0.0) for a predictable and scalable architecture.
+- Local Database: sqflite (v2.4.2) for persistent on-device storage of bird sightings.
+- Mapping: flutter_map (v7.0.2) and latlong2 for geographic visualizations.
+- Geolocation: geolocator (v10.1.0) for real-time coordinate retrieval.
+- Routing: Modular routing system implemented in AppRouter.
+- Sharing: share_plus (v12.0.1) for exporting observation data.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Architecture & Services
+The application follows a clean feature-based architecture to separate concerns:
+- Features: Modular folders for observation_form, observation_list, observation_map, and species_list.
+- Database Service: A dedicated DatabaseService class manages SQLite initialization and CRUD operations for the observations table.
+- Core Logic: Uses Enums and Extensions (e.g., ObservationType) to ensure type safety and clean storage keys.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Developed by Juhani Karjalainen

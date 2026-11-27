@@ -157,13 +157,11 @@ class ObservationRepository {
     final dbObservations = await _dbService.getAllObservations();
     _observations.addAll(
       dbObservations.map((obs) {
-        final species = speciesMap[obs['speciesId']];
-        if (species == null) {
-          throw Exception('Species not found for ID: \\${obs['speciesId']}');
-        }
+        final speciesId = obs['speciesId'] as String;
+        final species = speciesMap[speciesId] ?? Species.unlisted(speciesId);
         return Observation.fromMap(obs, species);
       }),
     );
-    _controller.add(_observations);
+    _notify();
   }
 }

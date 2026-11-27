@@ -74,17 +74,98 @@ void main() {
     expect(find.text('Talitiainen'), findsOneWidget);
   });
 
+  const listPicker = Key('observationListPicker');
+
   Future<void> openListPicker(WidgetTester tester) async {
-    await tester.tap(find.byKey(const Key('observationListPicker')));
+    await tester.tap(find.byKey(listPicker));
     await tester.pumpAndSettle();
   }
+
+  /// The name of the list the app bar dropdown shows.
+  String? shownList(WidgetTester tester) {
+    return tester
+        .widget<DropdownButton<ObservationListChoice>>(find.byKey(listPicker))
+        .value
+        ?.label;
+  }
+
+  testWidgets('picks the list in the app bar instead of a heading', (
+    tester,
+  ) async {
+    now = newYearsDay;
+    await pumpScreen(tester);
+
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.byKey(listPicker),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Vuodenpinnat'), findsOneWidget);
+    expect(shownList(tester), 'Vuodenpinnat');
+  });
+
+  testWidgets('does not change the list on a sideways swipe', (tester) async {
+    now = newYearsDay;
+    await pumpScreen(tester);
+    expect(find.byType(PageView), findsNothing);
+
+    for (final dx in [-400.0, 400.0]) {
+      await tester.drag(find.byType(Scaffold), Offset(dx, 0));
+      await tester.pumpAndSettle();
+
+      expect(shownList(tester), 'Vuodenpinnat');
+      expect(dropdownYear(tester), 2027);
+    }
+  });
+
+  testWidgets('fits a long list name in the app bar on a phone', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final longList = CustomList(
+      id: 'long',
+      name: 'Kesämökin rantasaunan takapihan lintulauta',
+      createdAt: DateTime(2022),
+    );
+    now = newYearsDay;
+    await pumpScreen(tester, customLists: [longList]);
+
+    await openListPicker(tester);
+    await tester.tap(find.text(longList.name).last);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(shownList(tester), longList.name);
+  });
+
+  testWidgets('shows the year picker only for Vuodenpinnat', (tester) async {
+    now = newYearsDay;
+    await pumpScreen(tester);
+    expect(find.byType(DropdownButtonFormField<int>), findsOneWidget);
+
+    for (final label in ['Elämänpinnat', 'Pihapinna', 'Vuodenpinnat']) {
+      await openListPicker(tester);
+      await tester.tap(find.text(label).last);
+      await tester.pumpAndSettle();
+
+      expect(shownList(tester), label);
+      expect(
+        find.byType(DropdownButtonFormField<int>),
+        label == 'Vuodenpinnat' ? findsOneWidget : findsNothing,
+      );
+    }
+  });
 
   testWidgets('offers every list in one dropdown, Vuodenpinnat first', (
     tester,
   ) async {
     now = newYearsDay;
     await pumpScreen(tester);
-    expect(find.text('Vuodenpinnat'), findsNWidgets(2)); // Title and dropdown.
+    expect(find.text('Vuodenpinnat'), findsOneWidget);
 
     await openListPicker(tester);
 
@@ -110,7 +191,8 @@ void main() {
     await tester.tap(find.text('Mökki').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Mökki'), findsNWidgets(2)); // Title and dropdown.
+    expect(find.text('Mökki'), findsOneWidget);
+    expect(shownList(tester), 'Mökki');
     expect(find.text('Yhteensä: 0'), findsOneWidget);
     expect(find.byType(DropdownButtonFormField<int>), findsNothing);
   });

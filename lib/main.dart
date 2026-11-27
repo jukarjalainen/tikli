@@ -7,9 +7,12 @@ import 'core/repositories/observation_repository.dart';
 import 'core/repositories/species_repository.dart';
 import 'core/repositories/custom_list_repository.dart';
 import 'core/services/database_service.dart';
+import 'core/services/desktop_database_setup.dart'
+    if (dart.library.js_interop) 'core/services/desktop_database_setup_web.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  setUpDesktopDatabase();
   final databaseService = DatabaseService();
   final speciesRepository = SpeciesRepository();
   final observationRepository = ObservationRepository(

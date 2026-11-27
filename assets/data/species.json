@@ -476,20 +476,12 @@
     "species": "Metso"
   },
   {
-    "id": "120",
-    "species": "Metsähanhi"
-  },
-  {
     "id": "121",
     "species": "Metsäkirvinen"
   },
   {
     "id": "122",
     "species": "Metsäviklo"
-  },
-  {
-    "id": "123",
-    "species": "Mustahaikara"
   },
   {
     "id": "124",
@@ -896,6 +888,10 @@
     "species": "Suosirri"
   },
   {
+    "id": "273",
+    "species": "Taigametsähanhi"
+  },
+  {
     "id": "225",
     "species": "Taigauunilintu"
   },
@@ -956,8 +952,8 @@
     "species": "Tundrakurmitsa"
   },
   {
-    "id": "240",
-    "species": "Tundraurpiainen"
+    "id": "274",
+    "species": "Tundrametsähanhi"
   },
   {
     "id": "241",

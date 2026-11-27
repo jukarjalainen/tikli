@@ -7,6 +7,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../../core/enums/observation_type.dart';
+import '../../../core/map/map_interaction_options.dart';
 import '../../observation_list/bloc/observation_list_bloc.dart';
 
 class ObservationMapScreen extends StatelessWidget {
@@ -74,7 +75,12 @@ class ObservationMapScreen extends StatelessWidget {
                   .toList();
           final center = markers.first.point;
           return FlutterMap(
-            options: MapOptions(initialCenter: center, initialZoom: 6),
+            options: MapOptions(
+              initialCenter: center,
+              initialZoom: 6,
+              initialRotation: 0,
+              interactionOptions: northUpInteractionOptions,
+            ),
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',

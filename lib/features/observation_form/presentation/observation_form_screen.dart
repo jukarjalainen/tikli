@@ -421,10 +421,13 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
 
 /// Checkbox for saving the observation to the list of [type].
 class _TypeCheckbox extends StatelessWidget {
-  const _TypeCheckbox({required this.type, required this.state});
+  const _TypeCheckbox({required this.type, required this.state, this.title});
 
   final ObservationType type;
   final ObservationFormState state;
+
+  /// Shown left of the checkbox instead of the label of [type].
+  final Widget? title;
 
   @override
   Widget build(BuildContext context) {
@@ -434,14 +437,15 @@ class _TypeCheckbox extends StatelessWidget {
           (_) => context.read<ObservationFormBloc>().add(
             ObservationTypeToggled(type),
           ),
-      title: Text(type.label),
+      title: title ?? Text(type.label),
       activeColor: const Color(0xFF57BF32),
     );
   }
 }
 
-/// The custom list checkbox, with a dropdown next to it for picking or adding
-/// the custom list to save to.
+/// The custom list checkbox. A dropdown for picking or adding the custom list
+/// to save to sits between its label and the checkbox, which lines up with
+/// the other list checkboxes.
 class _CustomListRow extends StatelessWidget {
   const _CustomListRow({required this.state});
 
@@ -458,24 +462,26 @@ class _CustomListRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _TypeCheckbox(type: ObservationType.custom, state: state),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: CustomListPicker(
-            customLists: state.customLists,
-            selectedId: state.selectedCustomListId,
-            onSelected:
-                (id) => context.read<ObservationFormBloc>().add(
-                  ObservationFormCustomListSelected(id),
-                ),
-            onAddNew: () => _addCustomList(context),
+    return _TypeCheckbox(
+      type: ObservationType.custom,
+      state: state,
+      title: Row(
+        children: [
+          Text(ObservationType.custom.label),
+          const SizedBox(width: 16),
+          Expanded(
+            child: CustomListPicker(
+              customLists: state.customLists,
+              selectedId: state.selectedCustomListId,
+              onSelected:
+                  (id) => context.read<ObservationFormBloc>().add(
+                    ObservationFormCustomListSelected(id),
+                  ),
+              onAddNew: () => _addCustomList(context),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

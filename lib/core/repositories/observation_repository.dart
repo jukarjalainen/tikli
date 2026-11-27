@@ -17,12 +17,14 @@ class ObservationRepository {
   ObservationRepository({
     required this.speciesRepository,
     ReverseGeocodingService? geocodingService,
+    DatabaseService? databaseService,
   }) : _reverseGeocodingService = geocodingService ?? ReverseGeocodingService(),
-       _ownsGeocodingService = geocodingService == null {
+       _ownsGeocodingService = geocodingService == null,
+       _dbService = databaseService ?? DatabaseService() {
     _initDatabase();
   }
   final SpeciesRepository speciesRepository;
-  final DatabaseService _dbService = DatabaseService();
+  final DatabaseService _dbService;
 
   final List<Observation> _observations = [];
   final StreamController<List<Observation>> _controller =

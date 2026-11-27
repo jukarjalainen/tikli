@@ -11,6 +11,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../../core/enums/observation_type.dart';
+import '../../../core/map/map_interaction_options.dart';
 import '../../../core/models/species.dart';
 import '../bloc/observation_form_bloc.dart';
 import '../../species_list/bloc/species_list_bloc.dart';
@@ -217,11 +218,8 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                                 options: MapOptions(
                                   initialCenter: state.position!,
                                   initialZoom: 15,
-                                  interactionOptions: const InteractionOptions(
-                                    flags:
-                                        InteractiveFlag.all &
-                                        ~InteractiveFlag.rotate,
-                                  ),
+                                  interactionOptions:
+                                      northUpInteractionOptions,
                                   onPositionChanged: (camera, hasGesture) {
                                     if (!hasGesture) {
                                       return;

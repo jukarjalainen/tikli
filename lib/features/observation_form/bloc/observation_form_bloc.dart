@@ -7,9 +7,9 @@ import 'package:latlong2/latlong.dart';
 
 import '../../../core/enums/observation_type.dart';
 import '../../../core/models/species.dart';
-import '../../../core/models/yard_list.dart';
+import '../../../core/models/custom_list.dart';
 import '../../../core/repositories/observation_repository.dart';
-import '../../../core/repositories/yard_list_repository.dart';
+import '../../../core/repositories/custom_list_repository.dart';
 import '../../../core/services/location_service.dart';
 import '../../../core/services/reverse_geocoding_service.dart';
 
@@ -20,14 +20,14 @@ class ObservationFormBloc
     extends Bloc<ObservationFormEvent, ObservationFormState> {
   ObservationFormBloc({
     required ObservationRepository observationRepository,
-    required YardListRepository yardListRepository,
+    required CustomListRepository customListRepository,
     required LocationService locationService,
     required ReverseGeocodingService reverseGeocodingService,
     required List<Species> selectedSpecies,
     LatLng? initialPosition,
     DateTime? initialTimestamp,
   }) : _observationRepository = observationRepository,
-       _yardListRepository = yardListRepository,
+       _customListRepository = customListRepository,
        _locationService = locationService,
        _reverseGeocodingService = reverseGeocodingService,
        super(
@@ -35,8 +35,8 @@ class ObservationFormBloc
            selectedSpecies: selectedSpecies,
            position: initialPosition,
            timestamp: initialTimestamp ?? DateTime.now(),
-           yardLists: yardListRepository.current?.lists ?? const [],
-           selectedYardListId: yardListRepository.current?.activeId,
+           customLists: customListRepository.current?.lists ?? const [],
+           selectedCustomListId: customListRepository.current?.activeId,
          ),
        ) {
     on<ObservationFormLocationRequested>(_onLocationRequested);
@@ -47,13 +47,13 @@ class ObservationFormBloc
     on<ObservationFormLocationCleared>(_onLocationCleared);
     on<ObservationFormmunicipalityChanged>(_onmunicipalityChanged);
     on<ObservationFormSpeciesRemoved>(_onSpeciesRemoved);
-    on<ObservationFormYardListSelected>(_onYardListSelected);
-    on<ObservationFormYardListAdded>(_onYardListAdded);
+    on<ObservationFormCustomListSelected>(_onCustomListSelected);
+    on<ObservationFormCustomListAdded>(_onCustomListAdded);
     on<ObservationFormSubmitted>(_onSubmitted);
   }
 
   final ObservationRepository _observationRepository;
-  final YardListRepository _yardListRepository;
+  final CustomListRepository _customListRepository;
   final LocationService _locationService;
   final ReverseGeocodingService _reverseGeocodingService;
 
@@ -150,37 +150,36 @@ class ObservationFormBloc
     emit(state.copyWith(selectedSpecies: updated));
   }
 
-  /// Picks the yard list to save to, and ticks the yard list type.
-  void _onYardListSelected(
-    ObservationFormYardListSelected event,
+  /// Picks the custom list to save to, and ticks the custom list checkbox.
+  void _onCustomListSelected(
+    ObservationFormCustomListSelected event,
     Emitter<ObservationFormState> emit,
   ) {
     emit(
       state.copyWith(
-        selectedYardListId: event.id,
-        selectedTypes: {...state.selectedTypes, ObservationType.yard},
+        selectedCustomListId: event.id,
+        selectedTypes: {...state.selectedTypes, ObservationType.custom},
       ),
     );
   }
 
-  /// Creates a yard list and picks it, like [_onYardListSelected].
-  Future<void> _onYardListAdded(
-    ObservationFormYardListAdded event,
+  /// Creates a custom list and picks it, like [_onCustomListSelected].
+  Future<void> _onCustomListAdded(
+    ObservationFormCustomListAdded event,
     Emitter<ObservationFormState> emit,
   ) async {
     try {
-      final created = await _yardListRepository.create(event.name);
+      final created = await _customListRepository.create(event.name);
       emit(
         state.copyWith(
-          yardLists: _yardListRepository.current?.lists ?? [
-            ...state.yardLists,
-            created,
-          ],
-          selectedYardListId: created.id,
-          selectedTypes: {...state.selectedTypes, ObservationType.yard},
+          customLists:
+              _customListRepository.current?.lists ??
+              [...state.customLists, created],
+          selectedCustomListId: created.id,
+          selectedTypes: {...state.selectedTypes, ObservationType.custom},
         ),
       );
-    } on YardListNameException catch (error) {
+    } on CustomListNameException catch (error) {
       emit(
         state.copyWith(
           status: ObservationFormStatus.failure,
@@ -213,13 +212,13 @@ class ObservationFormBloc
       return;
     }
 
-    final yardListId = state.selectedYardListId;
-    if (state.selectedTypes.contains(ObservationType.yard) &&
-        yardListId == null) {
+    final customListId = state.selectedCustomListId;
+    if (state.selectedTypes.contains(ObservationType.custom) &&
+        customListId == null) {
       emit(
         state.copyWith(
           status: ObservationFormStatus.failure,
-          errorMessage: 'Valitse pihapinna.',
+          errorMessage: 'Valitse oma lista.',
         ),
       );
       return;
@@ -254,12 +253,14 @@ class ObservationFormBloc
           typesToSave.remove(ObservationType.life);
         }
 
-        // 2. Poista pihapinna tallennettavista, jos se on jo havaittu
-        //    valitulla pihapinnalla
+        // 2. Poista oma lista tallennettavista, jos laji on jo valitulla
+        //    omalla listalla
         if (existingObs.any(
-          (o) => o.type == ObservationType.yard && o.yardListId == yardListId,
+          (o) =>
+              o.type == ObservationType.custom &&
+              o.customListId == customListId,
         )) {
-          typesToSave.remove(ObservationType.yard);
+          typesToSave.remove(ObservationType.custom);
         }
 
         // 3. Poista vuodenpinna, jos se on jo havaittu TÄNÄ VUONNA
@@ -275,10 +276,10 @@ class ObservationFormBloc
         }
 
         // Tarkistetaan, pitääkö lajille luoda automaattisesti myös elis.
-        // (Jos käyttäjä valitsi vuosi- tai pihapinnan, mutta lajista ei ole elistä olemassa)
+        // (Jos käyttäjä valitsi vuodenpinnan tai oman listan, mutta lajista ei ole elistä olemassa)
         final requiresLifeEntry =
             (state.selectedTypes.contains(ObservationType.yearly) ||
-                state.selectedTypes.contains(ObservationType.yard)) &&
+                state.selectedTypes.contains(ObservationType.custom)) &&
             !existingObs.any((o) => o.type == ObservationType.life);
 
         if (requiresLifeEntry) {
@@ -296,14 +297,14 @@ class ObservationFormBloc
                 state.municipality?.trim().isEmpty == true
                     ? null
                     : state.municipality,
-            yardListId: type == ObservationType.yard ? yardListId : null,
+            customListId: type == ObservationType.custom ? customListId : null,
           );
         }
       }
-      if (yardListId != null &&
-          state.selectedTypes.contains(ObservationType.yard)) {
-        // Preselect the same yard list next time.
-        await _yardListRepository.setActive(yardListId);
+      if (customListId != null &&
+          state.selectedTypes.contains(ObservationType.custom)) {
+        // Preselect the same custom list next time.
+        await _customListRepository.setActive(customListId);
       }
       emit(state.copyWith(status: ObservationFormStatus.success));
     } catch (error) {

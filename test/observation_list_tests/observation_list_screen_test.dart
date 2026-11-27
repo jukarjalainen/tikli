@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tikli/core/models/custom_list.dart';
 import 'package:tikli/features/observation_list/bloc/observation_list_bloc.dart';
 import 'package:tikli/features/observation_list/presentation/observation_list_screen.dart';
 import 'package:tikli/shared/widgets/year_rollover_watcher.dart';
@@ -13,8 +14,12 @@ void main() {
 
   late DateTime now;
 
-  /// Shows the screen with one yearly observation made in 2026.
-  Future<void> pumpScreen(WidgetTester tester) async {
+  /// Shows the screen with one yearly observation made in 2026, and the
+  /// custom lists [customLists].
+  Future<void> pumpScreen(
+    WidgetTester tester, {
+    List<CustomList>? customLists,
+  }) async {
     final repository = FakeObservationRepository([
       testObservation('last-year', DateTime(2026, 5, 1)),
     ]);
@@ -23,8 +28,8 @@ void main() {
         create:
             (_) => ObservationListBloc(
               observationRepository: repository,
-              yardListRepository: fakeYardListRepository(
-                yardLists: [koti, mokki],
+              customListRepository: fakeCustomListRepository(
+                customLists: customLists ?? [pihapinna, mokki],
               ),
               clock: () => now,
             )..add(const ObservationListSubscriptionRequested()),
@@ -87,9 +92,9 @@ void main() {
     final tops = [
       for (final label in [
         'Vuodenpinnat',
-        'Pihapinnat Koti',
-        'Pihapinnat Mökki',
         'Elämänpinnat',
+        'Pihapinna',
+        'Mökki',
       ])
         tester.getTopLeft(find.text(label).last).dy,
     ];
@@ -97,17 +102,33 @@ void main() {
     expect(tops.toSet(), hasLength(4));
   });
 
-  testWidgets('opens a yard list from the list dropdown', (tester) async {
+  testWidgets('opens a custom list from the list dropdown', (tester) async {
     now = newYearsDay;
     await pumpScreen(tester);
 
     await openListPicker(tester);
-    await tester.tap(find.text('Pihapinnat Mökki').last);
+    await tester.tap(find.text('Mökki').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Pihapinnat Mökki'), findsNWidgets(2));
+    expect(find.text('Mökki'), findsNWidgets(2)); // Title and dropdown.
     expect(find.text('Yhteensä: 0'), findsOneWidget);
     expect(find.byType(DropdownButtonFormField<int>), findsNothing);
+  });
+
+  testWidgets('points to the form while there are no custom lists', (
+    tester,
+  ) async {
+    now = newYearsDay;
+    await pumpScreen(tester, customLists: const []);
+
+    await openListPicker(tester);
+    await tester.tap(find.text('Omat listat').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Ei omia listoja. Lisää lista havaintolomakkeella.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('starts the new list when the app is resumed', (tester) async {

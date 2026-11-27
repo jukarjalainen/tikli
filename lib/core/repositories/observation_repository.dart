@@ -46,11 +46,11 @@ class ObservationRepository {
     DateTime? timestamp,
     LatLng? position,
     String? municipality,
-    String? yardListId,
+    String? customListId,
   }) async {
     assert(
-      (type == ObservationType.yard) == (yardListId != null),
-      'yardListId is required for yard observations and only for them',
+      (type == ObservationType.custom) == (customListId != null),
+      'customListId is required for custom observations and only for them',
     );
     final locationDescription =
         position != null
@@ -63,7 +63,7 @@ class ObservationRepository {
       species.id,
       timestamp ?? DateTime.now(),
       type,
-      yardListId,
+      customListId,
     );
     final observation = Observation(
       id: id,
@@ -72,7 +72,7 @@ class ObservationRepository {
       timestamp: timestamp ?? DateTime.now(),
       position: position,
       municipality: locationDescription,
-      yardListId: type == ObservationType.yard ? yardListId : null,
+      customListId: type == ObservationType.custom ? customListId : null,
     );
 
     _observations.add(observation);
@@ -156,9 +156,9 @@ class ObservationRepository {
     String speciesId,
     DateTime timestamp,
     ObservationType type,
-    String? yardListId,
+    String? customListId,
   ) {
-    final listPart = yardListId == null ? '' : '-$yardListId';
+    final listPart = customListId == null ? '' : '-$customListId';
     return '$speciesId-${type.storageKey}$listPart-${timestamp.millisecondsSinceEpoch}';
   }
 

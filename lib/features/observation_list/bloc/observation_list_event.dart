@@ -21,22 +21,22 @@ class ObservationListDataChanged extends ObservationListEvent {
 }
 
 class ObservationListFilterChanged extends ObservationListEvent {
-  const ObservationListFilterChanged(this.type, {this.year, this.yardListId});
+  const ObservationListFilterChanged(this.type, {this.year, this.customListId});
 
   final ObservationType type;
   final int? year;
 
-  /// The yard list to show, when the user picks one.
-  final String? yardListId;
+  /// The custom list to show, when the user picks one.
+  final String? customListId;
 
   @override
-  List<Object?> get props => [type, year, yardListId];
+  List<Object?> get props => [type, year, customListId];
 }
 
-class ObservationListYardListsChanged extends ObservationListEvent {
-  const ObservationListYardListsChanged(this.snapshot);
+class ObservationListCustomListsChanged extends ObservationListEvent {
+  const ObservationListCustomListsChanged(this.snapshot);
 
-  final YardListsSnapshot snapshot;
+  final CustomListsSnapshot snapshot;
 
   @override
   List<Object?> get props => [snapshot];

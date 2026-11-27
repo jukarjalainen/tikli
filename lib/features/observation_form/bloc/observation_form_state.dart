@@ -9,8 +9,8 @@ class ObservationFormState extends Equatable {
     this.timestamp,
     Set<ObservationType>? selectedTypes,
     this.municipality,
-    this.yardLists = const [],
-    this.selectedYardListId,
+    this.customLists = const [],
+    this.selectedCustomListId,
     this.status = ObservationFormStatus.editing,
     this.errorMessage,
   }) : selectedSpecies = List.unmodifiable(selectedSpecies),
@@ -22,11 +22,11 @@ class ObservationFormState extends Equatable {
   final DateTime? timestamp;
   final String? municipality;
 
-  /// The yard lists to pick from, oldest first.
-  final List<YardList> yardLists;
+  /// The custom lists to pick from, oldest first.
+  final List<CustomList> customLists;
 
-  /// The yard list yard observations are saved to.
-  final String? selectedYardListId;
+  /// The custom list the observation is saved to, if any.
+  final String? selectedCustomListId;
   final ObservationFormStatus status;
   final String? errorMessage;
 
@@ -39,8 +39,8 @@ class ObservationFormState extends Equatable {
     bool clearTimestamp = false,
     String? municipality,
     bool clearmunicipality = false,
-    List<YardList>? yardLists,
-    String? selectedYardListId,
+    List<CustomList>? customLists,
+    String? selectedCustomListId,
     ObservationFormStatus? status,
     String? errorMessage,
   }) {
@@ -54,8 +54,8 @@ class ObservationFormState extends Equatable {
       timestamp: clearTimestamp ? null : (timestamp ?? this.timestamp),
       municipality:
           clearmunicipality ? null : (municipality ?? this.municipality),
-      yardLists: yardLists ?? this.yardLists,
-      selectedYardListId: selectedYardListId ?? this.selectedYardListId,
+      customLists: customLists ?? this.customLists,
+      selectedCustomListId: selectedCustomListId ?? this.selectedCustomListId,
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
     );
@@ -63,9 +63,9 @@ class ObservationFormState extends Equatable {
 
   bool get isSaving => status == ObservationFormStatus.saving;
 
-  YardList? get selectedYardList {
-    for (final list in yardLists) {
-      if (list.id == selectedYardListId) return list;
+  CustomList? get selectedCustomList {
+    for (final list in customLists) {
+      if (list.id == selectedCustomListId) return list;
     }
     return null;
   }
@@ -77,8 +77,8 @@ class ObservationFormState extends Equatable {
     position,
     timestamp,
     municipality,
-    yardLists,
-    selectedYardListId,
+    customLists,
+    selectedCustomListId,
     status,
     errorMessage,
   ];

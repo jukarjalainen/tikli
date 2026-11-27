@@ -42,7 +42,7 @@ Map<String, dynamic> _row(String speciesId, {int day = 1}) {
     'latitude': null,
     'longitude': null,
     'municipality': 'Oulu',
-    'yardListId': null,
+    'customListId': null,
   };
 }
 

@@ -8,9 +8,9 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../core/enums/observation_type.dart';
 import '../../../core/models/observation.dart';
-import '../../../core/models/yard_list.dart';
+import '../../../core/models/custom_list.dart';
 import '../../../core/repositories/observation_repository.dart';
-import '../../../core/repositories/yard_list_repository.dart';
+import '../../../core/repositories/custom_list_repository.dart';
 import '../formatters/observation_text_formatter.dart';
 
 // UI screen for exporting observations into files (TXT, JSON).
@@ -20,7 +20,7 @@ class ExportScreen extends StatelessWidget {
   // creates a JSON string representing the list of observations, suitable for backup/restore purposes
   String _generateJsonContent(
     List<Observation> observations,
-    List<YardList> yardLists,
+    List<CustomList> customLists,
   ) {
     final list =
         observations.map((obs) {
@@ -35,11 +35,11 @@ class ExportScreen extends StatelessWidget {
             'latitude': obs.position?.latitude,
             'longitude': obs.position?.longitude,
             'municipality': obs.municipality,
-            'yardListId': obs.yardListId,
+            'customListId': obs.customListId,
           };
         }).toList();
     return jsonEncode({
-      'yardLists': [for (final yardList in yardLists) yardList.toMap()],
+      'customLists': [for (final customList in customLists) customList.toMap()],
       'observations': list,
     });
   }
@@ -76,8 +76,9 @@ class ExportScreen extends StatelessWidget {
     // gets all observations from the repository to prepare the export content
     final repository = context.read<ObservationRepository>();
     final observations = repository.getAll();
-    final yardLists =
-        context.read<YardListRepository>().current?.lists ?? const <YardList>[];
+    final customLists =
+        context.read<CustomListRepository>().current?.lists ??
+        const <CustomList>[];
 
     return Scaffold(
       appBar: AppBar(title: const Text('Tulosta havainnot')),
@@ -94,7 +95,7 @@ class ExportScreen extends StatelessWidget {
               onPressed: () async {
                 final txtContent = formatObservationsAsText(
                   observations,
-                  yardLists: yardLists,
+                  customLists: customLists,
                 );
                 await _exportFile(
                   context,
@@ -111,7 +112,7 @@ class ExportScreen extends StatelessWidget {
               onPressed: () async {
                 final jsonContent = _generateJsonContent(
                   observations,
-                  yardLists,
+                  customLists,
                 );
                 await _exportFile(
                   context,

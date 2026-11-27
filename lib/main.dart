@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'app.dart';
 import 'core/repositories/observation_repository.dart';
 import 'core/repositories/species_repository.dart';
-import 'core/repositories/yard_list_repository.dart';
+import 'core/repositories/custom_list_repository.dart';
 import 'core/services/database_service.dart';
 
 void main() {
@@ -16,7 +16,7 @@ void main() {
     speciesRepository: speciesRepository,
     databaseService: databaseService,
   );
-  final yardListRepository = YardListRepository(
+  final customListRepository = CustomListRepository(
     databaseService: databaseService,
   );
 
@@ -24,7 +24,7 @@ void main() {
     TikliApp(
       observationRepository: observationRepository,
       speciesRepository: speciesRepository,
-      yardListRepository: yardListRepository,
+      customListRepository: customListRepository,
     ),
   );
 }

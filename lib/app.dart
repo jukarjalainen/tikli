@@ -8,7 +8,7 @@ import 'app_router.dart';
 import 'core/constants/app_routes.dart';
 import 'core/repositories/observation_repository.dart';
 import 'core/repositories/species_repository.dart';
-import 'core/repositories/yard_list_repository.dart';
+import 'core/repositories/custom_list_repository.dart';
 import 'core/services/location_permission_service.dart';
 import 'core/services/location_service.dart';
 import 'core/services/reverse_geocoding_service.dart';
@@ -21,12 +21,12 @@ class TikliApp extends StatefulWidget {
     super.key,
     required this.observationRepository,
     required this.speciesRepository,
-    required this.yardListRepository,
+    required this.customListRepository,
   });
 
   final ObservationRepository observationRepository;
   final SpeciesRepository speciesRepository;
-  final YardListRepository yardListRepository;
+  final CustomListRepository customListRepository;
 
   @override
   State<TikliApp> createState() => _TikliAppState();
@@ -43,7 +43,7 @@ class _TikliAppState extends State<TikliApp> {
     super.initState();
     _router = AppRouter(
       observationRepository: widget.observationRepository,
-      yardListRepository: widget.yardListRepository,
+      customListRepository: widget.customListRepository,
     );
     _locationPermissionService = LocationPermissionService();
     _locationService = LocationService();
@@ -57,7 +57,7 @@ class _TikliAppState extends State<TikliApp> {
   void dispose() {
     _reverseGeocodingService.dispose();
     widget.observationRepository.dispose();
-    widget.yardListRepository.dispose();
+    widget.customListRepository.dispose();
     super.dispose();
   }
 
@@ -71,8 +71,8 @@ class _TikliAppState extends State<TikliApp> {
         RepositoryProvider<SpeciesRepository>.value(
           value: widget.speciesRepository,
         ),
-        RepositoryProvider<YardListRepository>.value(
-          value: widget.yardListRepository,
+        RepositoryProvider<CustomListRepository>.value(
+          value: widget.customListRepository,
         ),
         RepositoryProvider<LocationService>.value(value: _locationService),
         RepositoryProvider<ReverseGeocodingService>.value(
@@ -91,7 +91,7 @@ class _TikliAppState extends State<TikliApp> {
             create:
                 (context) => ObservationListBloc(
                   observationRepository: widget.observationRepository,
-                  yardListRepository: widget.yardListRepository,
+                  customListRepository: widget.customListRepository,
                 )..add(const ObservationListSubscriptionRequested()),
           ),
         ],

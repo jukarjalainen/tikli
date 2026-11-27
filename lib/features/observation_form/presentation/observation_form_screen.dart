@@ -19,8 +19,8 @@ import '../../../core/enums/observation_type.dart';
 import '../../../core/map/map_interaction_options.dart';
 import '../../../core/models/species.dart';
 import '../bloc/observation_form_bloc.dart';
-import '../widgets/yard_list_name_dialog.dart';
-import '../widgets/yard_list_picker.dart';
+import '../widgets/custom_list_name_dialog.dart';
+import '../widgets/custom_list_picker.dart';
 import '../../species_list/bloc/species_list_bloc.dart';
 
 class ObservationFormScreen extends StatefulWidget {
@@ -164,8 +164,8 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                     ),
                     const SizedBox(height: 8),
                     for (final type in ObservationType.values)
-                      if (type == ObservationType.yard)
-                        _YardTypeRow(state: state)
+                      if (type == ObservationType.custom)
+                        _CustomListRow(state: state)
                       else
                         _TypeCheckbox(type: type, state: state),
                     const SizedBox(height: 16),
@@ -238,8 +238,7 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                                 options: MapOptions(
                                   initialCenter: state.position!,
                                   initialZoom: 15,
-                                  interactionOptions:
-                                      northUpInteractionOptions,
+                                  interactionOptions: northUpInteractionOptions,
                                   onPositionChanged: (camera, hasGesture) {
                                     if (!hasGesture) {
                                       return;
@@ -441,37 +440,39 @@ class _TypeCheckbox extends StatelessWidget {
   }
 }
 
-/// The yard list checkbox, with a dropdown next to it for picking or adding
-/// the yard list to save to.
-class _YardTypeRow extends StatelessWidget {
-  const _YardTypeRow({required this.state});
+/// The custom list checkbox, with a dropdown next to it for picking or adding
+/// the custom list to save to.
+class _CustomListRow extends StatelessWidget {
+  const _CustomListRow({required this.state});
 
   final ObservationFormState state;
 
-  Future<void> _addYardList(BuildContext context) async {
+  Future<void> _addCustomList(BuildContext context) async {
     final bloc = context.read<ObservationFormBloc>();
-    final name = await YardListNameDialog.show(
+    final name = await CustomListNameDialog.show(
       context,
-      existingLists: state.yardLists,
+      existingLists: state.customLists,
     );
-    if (name != null) bloc.add(ObservationFormYardListAdded(name));
+    if (name != null) bloc.add(ObservationFormCustomListAdded(name));
   }
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _TypeCheckbox(type: ObservationType.yard, state: state)),
+        Expanded(
+          child: _TypeCheckbox(type: ObservationType.custom, state: state),
+        ),
         const SizedBox(width: 8),
         Expanded(
-          child: YardListPicker(
-            yardLists: state.yardLists,
-            selectedId: state.selectedYardListId,
+          child: CustomListPicker(
+            customLists: state.customLists,
+            selectedId: state.selectedCustomListId,
             onSelected:
                 (id) => context.read<ObservationFormBloc>().add(
-                  ObservationFormYardListSelected(id),
+                  ObservationFormCustomListSelected(id),
                 ),
-            onAddNew: () => _addYardList(context),
+            onAddNew: () => _addCustomList(context),
           ),
         ),
       ],

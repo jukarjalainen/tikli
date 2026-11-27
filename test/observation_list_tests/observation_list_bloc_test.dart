@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tikli/core/enums/observation_type.dart';
 import 'package:tikli/core/models/observation.dart';
-import 'package:tikli/core/repositories/yard_list_repository.dart';
+import 'package:tikli/core/repositories/custom_list_repository.dart';
 import 'package:tikli/features/observation_list/bloc/observation_list_bloc.dart';
 
 import '../helpers/observation_fakes.dart';
@@ -13,18 +13,24 @@ void main() {
 
   late DateTime now;
   late FakeObservationRepository repository;
-  late YardListRepository yardLists;
+  late CustomListRepository customLists;
   late ObservationListBloc bloc;
 
   /// Lets the bloc work through its queued events.
   Future<void> settle() => Future<void>.delayed(Duration.zero);
 
-  Future<void> startBloc([List<Observation> observations = const []]) async {
+  Future<void> startBloc(
+    List<Observation> observations, {
+    String? lastUsedCustomListId = 'pihapinna',
+  }) async {
     repository = FakeObservationRepository(observations);
-    yardLists = fakeYardListRepository(yardLists: [koti, mokki]);
+    customLists = fakeCustomListRepository(
+      customLists: [pihapinna, mokki],
+      activeCustomListId: lastUsedCustomListId,
+    );
     bloc = ObservationListBloc(
       observationRepository: repository,
-      yardListRepository: yardLists,
+      customListRepository: customLists,
       clock: () => now,
     )..add(const ObservationListSubscriptionRequested());
     await settle();
@@ -48,9 +54,9 @@ void main() {
         .toList();
   }
 
-  List<String> shownYardIds() {
+  List<String> shownCustomListIds() {
     return bloc.state
-        .observationsFor(ObservationType.yard)
+        .observationsFor(ObservationType.custom)
         .map((observation) => observation.id)
         .toList();
   }
@@ -58,7 +64,7 @@ void main() {
   tearDown(() async {
     await bloc.close();
     repository.dispose();
-    yardLists.dispose();
+    customLists.dispose();
   });
 
   test('starts an empty list for a new year', () async {
@@ -72,7 +78,7 @@ void main() {
 
   test('selects the current year when observations load later', () async {
     now = newYearsDay;
-    await startBloc();
+    await startBloc(const []);
 
     repository.replaceAll([lastYears]);
     await settle();
@@ -140,42 +146,50 @@ void main() {
     expect(bloc.state.availableYears, [2027]);
   });
 
-  group('yard lists', () {
+  group('custom lists', () {
     final atHome = testObservation(
       'home',
       DateTime(2026, 5, 1),
-      type: ObservationType.yard,
-      yardListId: 'default',
+      type: ObservationType.custom,
+      customListId: 'pihapinna',
     );
     final atCabin = testObservation(
       'cabin',
       DateTime(2026, 6, 1),
-      type: ObservationType.yard,
-      yardListId: 'mokki',
+      type: ObservationType.custom,
+      customListId: 'mokki',
     );
 
-    test('shows the last used yard list', () async {
+    test('shows the last used custom list', () async {
       now = newYearsDay;
       await startBloc([atHome, atCabin]);
 
-      expect(bloc.state.activeYardListId, 'default');
-      expect(bloc.state.yardLists, [koti, mokki]);
-      expect(shownYardIds(), ['home']);
+      expect(bloc.state.activeCustomListId, 'pihapinna');
+      expect(bloc.state.customLists, [pihapinna, mokki]);
+      expect(shownCustomListIds(), ['home']);
     });
 
-    test('opens another yard list from the dropdown', () async {
+    test('shows the oldest custom list before any is used', () async {
+      now = newYearsDay;
+      await startBloc([atHome, atCabin], lastUsedCustomListId: null);
+
+      expect(bloc.state.activeCustomListId, isNull);
+      expect(shownCustomListIds(), ['home']);
+    });
+
+    test('opens another custom list from the dropdown', () async {
       now = newYearsDay;
       await startBloc([atHome, atCabin]);
 
       await send(
         const ObservationListFilterChanged(
-          ObservationType.yard,
-          yardListId: 'mokki',
+          ObservationType.custom,
+          customListId: 'mokki',
         ),
       );
 
-      expect(bloc.state.selectedYardListId, 'mokki');
-      expect(shownYardIds(), ['cabin']);
+      expect(bloc.state.selectedCustomListId, 'mokki');
+      expect(shownCustomListIds(), ['cabin']);
     });
 
     test('shows the last used list again after saving to it', () async {
@@ -183,56 +197,56 @@ void main() {
       await startBloc([atHome, atCabin]);
       await send(
         const ObservationListFilterChanged(
-          ObservationType.yard,
-          yardListId: 'mokki',
+          ObservationType.custom,
+          customListId: 'mokki',
         ),
       );
 
-      await yardLists.setActive('mokki');
+      await customLists.setActive('mokki');
       await settle();
-      await yardLists.setActive('default');
+      await customLists.setActive('pihapinna');
       await settle();
 
-      expect(bloc.state.activeYardListId, 'default');
-      expect(bloc.state.selectedYardListId, isNull);
-      expect(shownYardIds(), ['home']);
+      expect(bloc.state.activeCustomListId, 'pihapinna');
+      expect(bloc.state.selectedCustomListId, isNull);
+      expect(shownCustomListIds(), ['home']);
     });
 
-    test('lists a yard list added in the observation form', () async {
+    test('lists a custom list added in the observation form', () async {
       now = newYearsDay;
       await startBloc([atHome, atCabin]);
 
-      await yardLists.create('Saari');
+      await customLists.create('Saari');
       await settle();
 
-      expect(bloc.state.yardLists.map((list) => list.name), [
-        'Koti',
+      expect(bloc.state.customLists.map((list) => list.name), [
+        'Pihapinna',
         'Mökki',
         'Saari',
       ]);
-      expect(shownYardIds(), ['home']);
+      expect(shownCustomListIds(), ['home']);
     });
 
-    test('counts a species once in each yard list', () async {
+    test('counts a species once in each custom list', () async {
       now = newYearsDay;
       await startBloc([
         atHome,
         testObservation(
           'home-again',
           DateTime(2026, 7, 1),
-          type: ObservationType.yard,
+          type: ObservationType.custom,
         ),
         atCabin,
       ]);
-      expect(shownYardIds(), ['home']);
+      expect(shownCustomListIds(), ['home']);
 
       await send(
         const ObservationListFilterChanged(
-          ObservationType.yard,
-          yardListId: 'mokki',
+          ObservationType.custom,
+          customListId: 'mokki',
         ),
       );
-      expect(shownYardIds(), ['cabin']);
+      expect(shownCustomListIds(), ['cabin']);
     });
   });
 

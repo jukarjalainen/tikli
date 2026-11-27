@@ -1,4 +1,4 @@
-// Main UI screen displaying a scrollable list of saved bird observations. 
+// Main UI screen displaying a scrollable list of saved bird observations.
 // Reacts to state changes from the ObservationListBloc.
 
 import 'package:flutter/material.dart';
@@ -63,7 +63,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
           buildWhen:
               (previous, current) =>
                   previous.filterType != current.filterType ||
-                  previous.shownYardList != current.shownYardList,
+                  previous.shownCustomList != current.shownCustomList,
           builder: (context, state) {
             return Text(state.choiceFor(state.filterType).label);
           },
@@ -196,7 +196,14 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                   Expanded(
                     child:
                         displayObservations.isEmpty
-                            ? const _EmptyState()
+                            ? _EmptyState(
+                              message:
+                                  pageType == ObservationType.custom &&
+                                          state.customLists.isEmpty
+                                      ? 'Ei omia listoja. Lisää lista '
+                                          'havaintolomakkeella.'
+                                      : 'No observations for this filter',
+                            )
                             : ListView.separated(
                               itemCount: displayObservations.length,
                               separatorBuilder:
@@ -221,8 +228,8 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
   }
 }
 
-/// Picks the list to show from every list: the yearly list, each yard list
-/// and the life list.
+/// Picks the list to show from every list: the yearly list, the life list and
+/// each custom list.
 class _ListDropdown extends StatelessWidget {
   const _ListDropdown({super.key, required this.state, required this.shown});
 
@@ -252,7 +259,7 @@ class _ListDropdown extends StatelessWidget {
         context.read<ObservationListBloc>().add(
           ObservationListFilterChanged(
             choice.type,
-            yardListId: choice.yardList?.id,
+            customListId: choice.customList?.id,
           ),
         );
       },
@@ -261,17 +268,19 @@ class _ListDropdown extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  const _EmptyState({required this.message});
+
+  final String message;
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.filter_list_off, size: 48, color: Colors.grey),
-          SizedBox(height: 8),
-          Text('No observations for this filter'),
+          const Icon(Icons.filter_list_off, size: 48, color: Colors.grey),
+          const SizedBox(height: 8),
+          Text(message, textAlign: TextAlign.center),
         ],
       ),
     );

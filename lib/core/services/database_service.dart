@@ -5,7 +5,7 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../models/yard_list.dart';
+import '../models/custom_list.dart';
 
 class DatabaseService {
   /// [databaseFactory] and [path] are for tests. By default the platform
@@ -17,13 +17,14 @@ class DatabaseService {
   /// Current schema version.
   ///
   /// 1: observations only.
-  /// 2: named yard lists (`yard_lists`), `observations.yardListId` and a
-  ///    key-value `settings` table.
+  /// 2: lists the user names (`custom_lists`), `observations.customListId` and
+  ///    a key-value `settings` table. The fixed yard list (type `yard`) became
+  ///    the custom list "Pihapinna".
   static const int schemaVersion = 2;
 
-  /// Settings key holding the id of the yard list last saved to, which the
+  /// Settings key holding the id of the custom list last saved to, which the
   /// observation form preselects.
-  static const String activeYardListIdKey = 'activeYardListId';
+  static const String activeCustomListIdKey = 'activeCustomListId';
 
   final DatabaseFactory? _databaseFactory;
   final String? _path;
@@ -63,30 +64,25 @@ class DatabaseService {
         latitude REAL,                -- Latitude of the observation location
         longitude REAL,               -- Longitude of the observation location
         municipality TEXT,            -- municipality or description of the location
-        yardListId TEXT               -- yard list of a yard observation
+        customListId TEXT             -- custom list of a custom observation
       )
     ''');
-    await _createYardListTables(db);
+    await _createCustomListTables(db);
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      await db.execute('ALTER TABLE observations ADD COLUMN yardListId TEXT');
-      await _createYardListTables(db);
-      await db.update(
-        'observations',
-        {'yardListId': YardList.defaultId},
-        where: 'type = ?',
-        whereArgs: ['yard'],
-      );
+      await db.execute('ALTER TABLE observations ADD COLUMN customListId TEXT');
+      await _createCustomListTables(db);
+      await _moveYardObservationsToCustomList(db);
     }
   }
 
-  /// Creates the yard list and settings tables and the default yard list,
-  /// which the observation form preselects at first.
-  Future<void> _createYardListTables(DatabaseExecutor db) async {
+  /// Creates the custom list and settings tables. A new database has no custom
+  /// lists.
+  Future<void> _createCustomListTables(DatabaseExecutor db) async {
     await db.execute('''
-      CREATE TABLE yard_lists (
+      CREATE TABLE custom_lists (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         createdAt TEXT NOT NULL
@@ -98,17 +94,29 @@ class DatabaseService {
         value TEXT
       )
     ''');
+  }
+
+  /// Turns the observations of the old fixed yard list into the custom list
+  /// "Pihapinna", if there are any, and preselects it in the observation form.
+  Future<void> _moveYardObservationsToCustomList(DatabaseExecutor db) async {
+    final moved = await db.update(
+      'observations',
+      {'type': 'custom', 'customListId': CustomList.migratedYardListId},
+      where: 'type = ?',
+      whereArgs: ['yard'],
+    );
+    if (moved == 0) return;
     await db.insert(
-      'yard_lists',
-      YardList(
-        id: YardList.defaultId,
-        name: YardList.defaultName,
+      'custom_lists',
+      CustomList(
+        id: CustomList.migratedYardListId,
+        name: CustomList.migratedYardListName,
         createdAt: DateTime.now(),
       ).toMap(),
     );
     await db.insert('settings', {
-      'key': activeYardListIdKey,
-      'value': YardList.defaultId,
+      'key': activeCustomListIdKey,
+      'value': CustomList.migratedYardListId,
     });
   }
 
@@ -138,15 +146,15 @@ class DatabaseService {
     await db.delete('observations', where: 'id = ?', whereArgs: [id]);
   }
 
-  /// Yard lists, oldest first.
-  Future<List<Map<String, dynamic>>> getYardLists() async {
+  /// Custom lists, oldest first.
+  Future<List<Map<String, dynamic>>> getCustomLists() async {
     final db = await database;
-    return db.query('yard_lists', orderBy: 'createdAt ASC');
+    return db.query('custom_lists', orderBy: 'createdAt ASC');
   }
 
-  Future<void> insertYardList(Map<String, dynamic> yardListMap) async {
+  Future<void> insertCustomList(Map<String, dynamic> customListMap) async {
     final db = await database;
-    await db.insert('yard_lists', yardListMap);
+    await db.insert('custom_lists', customListMap);
   }
 
   Future<String?> getSetting(String key) async {

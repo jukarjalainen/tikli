@@ -68,9 +68,9 @@ class ObservationFormSubmitted extends ObservationFormEvent {
   const ObservationFormSubmitted();
 }
 
-/// Picks the yard list yard observations are saved to.
-class ObservationFormYardListSelected extends ObservationFormEvent {
-  const ObservationFormYardListSelected(this.id);
+/// Picks the custom list the observation is saved to.
+class ObservationFormCustomListSelected extends ObservationFormEvent {
+  const ObservationFormCustomListSelected(this.id);
 
   final String id;
 
@@ -78,9 +78,9 @@ class ObservationFormYardListSelected extends ObservationFormEvent {
   List<Object?> get props => [id];
 }
 
-/// Creates a yard list named [name] and picks it.
-class ObservationFormYardListAdded extends ObservationFormEvent {
-  const ObservationFormYardListAdded(this.name);
+/// Creates a custom list named [name] and picks it.
+class ObservationFormCustomListAdded extends ObservationFormEvent {
+  const ObservationFormCustomListAdded(this.name);
 
   final String name;
 

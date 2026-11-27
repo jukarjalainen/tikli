@@ -35,7 +35,7 @@ void main() {
 
     final bloc = ObservationListBloc(
       observationRepository: repository,
-      yardListRepository: fakeYardListRepository(),
+      customListRepository: fakeCustomListRepository(),
     )..add(const ObservationListSubscriptionRequested());
     addTearDown(bloc.close);
 
@@ -59,9 +59,6 @@ void main() {
     expect(InteractiveFlag.hasRotate(interaction.flags), isFalse);
     expect(InteractiveFlag.hasDrag(interaction.flags), isTrue);
     expect(InteractiveFlag.hasPinchZoom(interaction.flags), isTrue);
-    expect(
-      interaction.cursorKeyboardRotationOptions.isKeyTrigger,
-      isNotNull,
-    );
+    expect(interaction.cursorKeyboardRotationOptions.isKeyTrigger, isNotNull);
   });
 }

@@ -5,9 +5,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:tikli/core/enums/observation_type.dart';
 import 'package:tikli/core/models/observation.dart';
 import 'package:tikli/core/models/species.dart';
-import 'package:tikli/core/models/yard_list.dart';
+import 'package:tikli/core/models/custom_list.dart';
 import 'package:tikli/core/repositories/observation_repository.dart';
-import 'package:tikli/core/repositories/yard_list_repository.dart';
+import 'package:tikli/core/repositories/custom_list_repository.dart';
 import 'package:tikli/core/services/database_service.dart';
 
 const talitiainen = Species(id: 'talitiainen', commonName: 'Talitiainen');
@@ -19,7 +19,7 @@ Observation testObservation(
   Species species = talitiainen,
   ObservationType type = ObservationType.yearly,
   String? municipality,
-  String? yardListId,
+  String? customListId,
 }) {
   return Observation(
     id: id,
@@ -27,9 +27,8 @@ Observation testObservation(
     type: type,
     timestamp: timestamp,
     municipality: municipality,
-    yardListId:
-        yardListId ??
-        (type == ObservationType.yard ? YardList.defaultId : null),
+    customListId:
+        customListId ?? (type == ObservationType.custom ? pihapinna.id : null),
   );
 }
 
@@ -61,7 +60,7 @@ class FakeObservationRepository extends Fake implements ObservationRepository {
     DateTime? timestamp,
     LatLng? position,
     String? municipality,
-    String? yardListId,
+    String? customListId,
   }) async {
     replaceAll([
       ..._observations,
@@ -72,7 +71,7 @@ class FakeObservationRepository extends Fake implements ObservationRepository {
         timestamp: timestamp,
         position: position,
         municipality: municipality,
-        yardListId: yardListId,
+        customListId: customListId,
       ),
     ]);
   }
@@ -88,36 +87,29 @@ class FakeObservationRepository extends Fake implements ObservationRepository {
   }
 }
 
-/// An in-memory stand-in for the SQLite database, seeded like a fresh install
-/// with the default yard list "Koti" preselected.
+/// An in-memory stand-in for the SQLite database. Without arguments it is
+/// like a fresh install: no custom lists and none preselected.
 class FakeDatabaseService extends Fake implements DatabaseService {
-  FakeDatabaseService({List<YardList>? yardLists, String? activeYardListId})
-    : _yardLists = [
-        for (final list
-            in yardLists ??
-                [
-                  YardList(
-                    id: YardList.defaultId,
-                    name: YardList.defaultName,
-                    createdAt: DateTime(2020),
-                  ),
-                ])
-          list.toMap(),
-      ],
-      _settings = {
-        DatabaseService.activeYardListIdKey:
-            activeYardListId ?? YardList.defaultId,
-      };
+  FakeDatabaseService({
+    List<CustomList> customLists = const [],
+    String? activeCustomListId,
+  }) : _customLists = [for (final list in customLists) list.toMap()],
+       _settings = {
+         if (activeCustomListId != null)
+           DatabaseService.activeCustomListIdKey: activeCustomListId,
+       };
 
-  final List<Map<String, dynamic>> _yardLists;
+  final List<Map<String, dynamic>> _customLists;
   final Map<String, String> _settings;
 
   @override
-  Future<List<Map<String, dynamic>>> getYardLists() async => [..._yardLists];
+  Future<List<Map<String, dynamic>>> getCustomLists() async => [
+    ..._customLists,
+  ];
 
   @override
-  Future<void> insertYardList(Map<String, dynamic> yardListMap) async {
-    _yardLists.add(yardListMap);
+  Future<void> insertCustomList(Map<String, dynamic> customListMap) async {
+    _customLists.add(customListMap);
   }
 
   @override
@@ -129,31 +121,30 @@ class FakeDatabaseService extends Fake implements DatabaseService {
   }
 }
 
-/// A [YardListRepository] on a [FakeDatabaseService]. It loads in a microtask,
-/// so let the test settle before reading [YardListRepository.current].
-YardListRepository fakeYardListRepository({
-  List<YardList>? yardLists,
-  String? activeYardListId,
+/// A [CustomListRepository] on a [FakeDatabaseService]. It loads in a microtask,
+/// so let the test settle before reading [CustomListRepository.current].
+CustomListRepository fakeCustomListRepository({
+  List<CustomList> customLists = const [],
+  String? activeCustomListId,
   FakeDatabaseService? databaseService,
 }) {
   var tick = 0;
-  return YardListRepository(
+  return CustomListRepository(
     databaseService:
         databaseService ??
         FakeDatabaseService(
-          yardLists: yardLists,
-          activeYardListId: activeYardListId,
+          customLists: customLists,
+          activeCustomListId: activeCustomListId,
         ),
     // Distinct, increasing times, so created lists get distinct ids.
     clock: () => DateTime(2030).add(Duration(seconds: tick++)),
   );
 }
 
-/// A second yard list for tests, next to the default "Koti".
-final mokki = YardList(id: 'mokki', name: 'Mökki', createdAt: DateTime(2021));
-
-YardList get koti => YardList(
-  id: YardList.defaultId,
-  name: YardList.defaultName,
+/// Custom lists for tests.
+final pihapinna = CustomList(
+  id: 'pihapinna',
+  name: 'Pihapinna',
   createdAt: DateTime(2020),
 );
+final mokki = CustomList(id: 'mokki', name: 'Mökki', createdAt: DateTime(2021));

@@ -1,6 +1,6 @@
 import '../../../core/enums/observation_type.dart';
 import '../../../core/models/observation.dart';
-import '../../../core/models/yard_list.dart';
+import '../../../core/models/custom_list.dart';
 
 /// Builds the human-readable text export of [observations].
 ///
@@ -8,12 +8,12 @@ import '../../../core/models/yard_list.dart';
 /// per year, oldest first. Each section is numbered from one and ordered by
 /// observation time.
 ///
-/// Each of [yardLists] gets its own yard list section, in the given order,
-/// headed by its name. Yard observations of lists not in [yardLists] share a
-/// plain "Pihapinnat" section.
+/// The life list follows. Then each of [customLists] gets its own section, in
+/// the given order, headed by its name. Custom observations of lists not in
+/// [customLists] share an "Omat listat" section, if there are any.
 String formatObservationsAsText(
   List<Observation> observations, {
-  List<YardList> yardLists = const [],
+  List<CustomList> customLists = const [],
 }) {
   // Oldest first, with observations without a timestamp at the start.
   final sorted = List<Observation>.from(observations)..sort((a, b) {
@@ -34,11 +34,11 @@ String formatObservationsAsText(
         .add(observation);
   }
 
-  final yard = ofType(ObservationType.yard);
-  final knownYardListIds = {for (final list in yardLists) list.id};
-  final unlistedYard = [
-    for (final observation in yard)
-      if (!knownYardListIds.contains(observation.yardListId)) observation,
+  final custom = ofType(ObservationType.custom);
+  final knownCustomListIds = {for (final list in customLists) list.id};
+  final unlisted = [
+    for (final observation in custom)
+      if (!knownCustomListIds.contains(observation.customListId)) observation,
   ];
 
   final sections = [
@@ -49,17 +49,16 @@ String formatObservationsAsText(
         header: year == null ? 'Vuodenpinnat' : 'Vuodenpinnat $year',
         entries: entries,
       ),
-    for (final list in yardLists)
+    (header: 'Elämänpinnat', entries: ofType(ObservationType.life)),
+    for (final list in customLists)
       (
-        header: 'Pihapinnat: ${list.name}',
+        header: list.name,
         entries: [
-          for (final observation in yard)
-            if (observation.yardListId == list.id) observation,
+          for (final observation in custom)
+            if (observation.customListId == list.id) observation,
         ],
       ),
-    if (yardLists.isEmpty || unlistedYard.isNotEmpty)
-      (header: 'Pihapinnat', entries: unlistedYard),
-    (header: 'Elämänpinnat', entries: ofType(ObservationType.life)),
+    if (unlisted.isNotEmpty) (header: 'Omat listat', entries: unlisted),
   ];
 
   final buffer = StringBuffer();

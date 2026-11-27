@@ -33,7 +33,7 @@ void main() {
       TikliApp(
         observationRepository: FakeObservationRepository(),
         speciesRepository: _FakeSpeciesRepository(),
-        yardListRepository: fakeYardListRepository(),
+        customListRepository: fakeCustomListRepository(),
       ),
     );
 

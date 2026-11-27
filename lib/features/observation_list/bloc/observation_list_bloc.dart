@@ -6,9 +6,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../core/enums/observation_type.dart';
 import '../../../core/models/observation.dart';
-import '../../../core/models/yard_list.dart';
+import '../../../core/models/custom_list.dart';
 import '../../../core/repositories/observation_repository.dart';
-import '../../../core/repositories/yard_list_repository.dart';
+import '../../../core/repositories/custom_list_repository.dart';
 import '../../../core/utils/clock.dart';
 
 part 'observation_list_event.dart';
@@ -18,25 +18,25 @@ class ObservationListBloc
     extends Bloc<ObservationListEvent, ObservationListState> {
   ObservationListBloc({
     required ObservationRepository observationRepository,
-    required YardListRepository yardListRepository,
+    required CustomListRepository customListRepository,
     Clock clock = DateTime.now,
   }) : _observationRepository = observationRepository,
-       _yardListRepository = yardListRepository,
+       _customListRepository = customListRepository,
        _clock = clock,
        super(ObservationListState(currentYear: clock().year)) {
     on<ObservationListSubscriptionRequested>(_onSubscriptionRequested);
     on<ObservationListDataChanged>(_onDataChanged);
-    on<ObservationListYardListsChanged>(_onYardListsChanged);
+    on<ObservationListCustomListsChanged>(_onCustomListsChanged);
     on<ObservationListFilterChanged>(_onFilterChanged);
     on<ObservationListYearCheckRequested>(_onYearCheckRequested);
     on<ObservationListObservationDeleted>(_onObservationDeleted);
   }
 
   final ObservationRepository _observationRepository;
-  final YardListRepository _yardListRepository;
+  final CustomListRepository _customListRepository;
   final Clock _clock;
   StreamSubscription<List<Observation>>? _subscription;
-  StreamSubscription<YardListsSnapshot>? _yardListsSubscription;
+  StreamSubscription<CustomListsSnapshot>? _customListsSubscription;
 
   Future<void> _onSubscriptionRequested(
     ObservationListSubscriptionRequested event,
@@ -44,12 +44,12 @@ class ObservationListBloc
   ) async {
     emit(state.copyWith(status: ObservationListStatus.loading));
     await _subscription?.cancel();
-    await _yardListsSubscription?.cancel();
+    await _customListsSubscription?.cancel();
     _subscription = _observationRepository.watchAll().listen(
       (observations) => add(ObservationListDataChanged(observations)),
     );
-    _yardListsSubscription = _yardListRepository.watch().listen(
-      (snapshot) => add(ObservationListYardListsChanged(snapshot)),
+    _customListsSubscription = _customListRepository.watch().listen(
+      (snapshot) => add(ObservationListCustomListsChanged(snapshot)),
     );
     add(ObservationListDataChanged(_observationRepository.getAll()));
   }
@@ -68,18 +68,18 @@ class ObservationListBloc
     );
   }
 
-  void _onYardListsChanged(
-    ObservationListYardListsChanged event,
+  void _onCustomListsChanged(
+    ObservationListCustomListsChanged event,
     Emitter<ObservationListState> emit,
   ) {
-    final activeChanged = event.snapshot.activeId != state.activeYardListId;
+    final activeChanged = event.snapshot.activeId != state.activeCustomListId;
     final next = state.copyWith(
-      yardLists: event.snapshot.lists,
-      activeYardListId: event.snapshot.activeId,
+      customLists: event.snapshot.lists,
+      activeCustomListId: event.snapshot.activeId,
       // A newly chosen active list is shown right away.
-      clearSelectedYardList: activeChanged,
+      clearSelectedCustomList: activeChanged,
     );
-    emit(_withResolvedYears(_withResolvedYardList(next)));
+    emit(_withResolvedYears(_withResolvedCustomList(next)));
   }
 
   void _onFilterChanged(
@@ -87,12 +87,12 @@ class ObservationListBloc
     Emitter<ObservationListState> emit,
   ) {
     emit(
-      _withResolvedYardList(
+      _withResolvedCustomList(
         _withResolvedYears(
           state.copyWith(filterType: event.type),
           requestedYear: event.year,
         ),
-        requestedYardListId: event.yardListId,
+        requestedCustomListId: event.customListId,
       ),
     );
   }
@@ -126,20 +126,20 @@ class ObservationListBloc
     );
   }
 
-  /// Picks the yard list [next] shows.
+  /// Picks the custom list [next] shows.
   ///
   /// The active list is shown unless the user is browsing another list that
-  /// still exists. [requestedYardListId] is a list the user just picked.
-  ObservationListState _withResolvedYardList(
+  /// still exists. [requestedCustomListId] is a list the user just picked.
+  ObservationListState _withResolvedCustomList(
     ObservationListState next, {
-    String? requestedYardListId,
+    String? requestedCustomListId,
   }) {
-    final id = requestedYardListId ?? next.selectedYardListId;
-    final exists = next.yardLists.any((list) => list.id == id);
-    if (id == null || !exists || id == next.activeYardListId) {
-      return next.copyWith(clearSelectedYardList: true);
+    final id = requestedCustomListId ?? next.selectedCustomListId;
+    final exists = next.customLists.any((list) => list.id == id);
+    if (id == null || !exists || id == next.activeCustomListId) {
+      return next.copyWith(clearSelectedCustomList: true);
     }
-    return next.copyWith(selectedYardListId: id);
+    return next.copyWith(selectedCustomListId: id);
   }
 
   Future<void> _onObservationDeleted(
@@ -152,7 +152,7 @@ class ObservationListBloc
   @override
   Future<void> close() async {
     await _subscription?.cancel();
-    await _yardListsSubscription?.cancel();
+    await _customListsSubscription?.cancel();
     return super.close();
   }
 }

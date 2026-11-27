@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/models/yard_list.dart';
+import '../../../core/models/custom_list.dart';
 
-/// Asks for the name of a new yard list. The name must not be empty or taken
+/// Asks for the name of a new custom list. The name must not be empty or taken
 /// by one of [existingLists].
 ///
 /// Pops the trimmed name, or null when cancelled.
-class YardListNameDialog extends StatefulWidget {
-  const YardListNameDialog({super.key, required this.existingLists});
+class CustomListNameDialog extends StatefulWidget {
+  const CustomListNameDialog({super.key, required this.existingLists});
 
-  final List<YardList> existingLists;
+  final List<CustomList> existingLists;
 
   static Future<String?> show(
     BuildContext context, {
-    required List<YardList> existingLists,
+    required List<CustomList> existingLists,
   }) {
     return showDialog<String>(
       context: context,
-      builder: (_) => YardListNameDialog(existingLists: existingLists),
+      builder: (_) => CustomListNameDialog(existingLists: existingLists),
     );
   }
 
   @override
-  State<YardListNameDialog> createState() => _YardListNameDialogState();
+  State<CustomListNameDialog> createState() => _CustomListNameDialogState();
 }
 
-class _YardListNameDialogState extends State<YardListNameDialog> {
+class _CustomListNameDialogState extends State<CustomListNameDialog> {
   final TextEditingController _controller = TextEditingController();
   String? _error;
 
@@ -36,7 +36,7 @@ class _YardListNameDialogState extends State<YardListNameDialog> {
   }
 
   void _submit() {
-    final error = yardListNameError(_controller.text, widget.existingLists);
+    final error = customListNameError(_controller.text, widget.existingLists);
     if (error != null) {
       setState(() => _error = error);
       return;
@@ -47,9 +47,9 @@ class _YardListNameDialogState extends State<YardListNameDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Uusi pihapinna'),
+      title: const Text('Uusi lista'),
       content: TextField(
-        key: const Key('yardListNameField'),
+        key: const Key('customListNameField'),
         controller: _controller,
         autofocus: true,
         textCapitalization: TextCapitalization.sentences,

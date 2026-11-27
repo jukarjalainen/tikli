@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/constants/app_routes.dart';
 import 'core/models/species.dart';
 import 'core/repositories/observation_repository.dart';
-import 'core/repositories/yard_list_repository.dart';
+import 'core/repositories/custom_list_repository.dart';
 import 'core/services/location_service.dart';
 import 'core/services/reverse_geocoding_service.dart';
 import 'features/observation_form/bloc/observation_form_bloc.dart';
@@ -17,12 +17,12 @@ import 'features/export/presentation/export_screen.dart';
 class AppRouter {
   AppRouter({
     required ObservationRepository observationRepository,
-    required YardListRepository yardListRepository,
+    required CustomListRepository customListRepository,
   }) : _observationRepository = observationRepository,
-       _yardListRepository = yardListRepository;
+       _customListRepository = customListRepository;
 
   final ObservationRepository _observationRepository;
-  final YardListRepository _yardListRepository;
+  final CustomListRepository _customListRepository;
 
   Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -42,7 +42,7 @@ class AppRouter {
               create:
                   (_) => ObservationFormBloc(
                     observationRepository: _observationRepository,
-                    yardListRepository: _yardListRepository,
+                    customListRepository: _customListRepository,
                     locationService: locationService,
                     reverseGeocodingService: reverseGeocodingService,
                     selectedSpecies: species,

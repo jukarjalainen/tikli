@@ -27,65 +27,63 @@ void main() {
       'Vuodenpinnat 2027\n'
       '1. tikli 2.1.2027 Oulu\n'
       '\n'
-      'Pihapinnat\n'
-      '\n'
       'Elämänpinnat\n'
       '1. talitiainen 1.1.2026\n',
     );
   });
 
-  test('prints a separate yard list for each named yard list', () {
+  test('prints each custom list under its own name', () {
     final text = formatObservationsAsText(
       [
         testObservation(
           '1',
           DateTime(2026, 6, 1),
-          type: ObservationType.yard,
-          yardListId: 'mokki',
+          type: ObservationType.custom,
+          customListId: 'mokki',
         ),
         testObservation(
           '2',
           DateTime(2026, 5, 1),
           species: tikli,
-          type: ObservationType.yard,
+          type: ObservationType.custom,
         ),
         testObservation(
           '3',
           DateTime(2026, 5, 2),
-          type: ObservationType.yard,
+          type: ObservationType.custom,
         ),
         testObservation(
           '4',
           DateTime(2026, 7, 1),
-          type: ObservationType.yard,
-          yardListId: 'deleted',
+          type: ObservationType.custom,
+          customListId: 'deleted',
         ),
       ],
-      yardLists: [koti, mokki],
+      customLists: [pihapinna, mokki],
     );
 
     expect(
       text,
       'Vuodenpinnat\n'
       '\n'
-      'Pihapinnat: Koti\n'
+      'Elämänpinnat\n'
+      '\n'
+      'Pihapinna\n'
       '1. tikli 1.5.2026\n'
       '2. talitiainen 2.5.2026\n'
       '\n'
-      'Pihapinnat: Mökki\n'
+      'Mökki\n'
       '1. talitiainen 1.6.2026\n'
       '\n'
-      'Pihapinnat\n'
-      '1. talitiainen 1.7.2026\n'
-      '\n'
-      'Elämänpinnat\n',
+      'Omat listat\n'
+      '1. talitiainen 1.7.2026\n',
     );
   });
 
-  test('keeps every heading when there are no observations', () {
+  test('keeps the built-in headings when there are no observations', () {
     expect(
-      formatObservationsAsText(const []),
-      'Vuodenpinnat\n\nPihapinnat\n\nElämänpinnat\n',
+      formatObservationsAsText(const [], customLists: [mokki]),
+      'Vuodenpinnat\n\nElämänpinnat\n\nMökki\n',
     );
   });
 }

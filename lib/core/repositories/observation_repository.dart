@@ -46,7 +46,12 @@ class ObservationRepository {
     DateTime? timestamp,
     LatLng? position,
     String? municipality,
+    String? customListId,
   }) async {
+    assert(
+      (type == ObservationType.custom) == (customListId != null),
+      'customListId is required for custom observations and only for them',
+    );
     final locationDescription =
         position != null
             ? await _resolvemunicipality(
@@ -54,7 +59,12 @@ class ObservationRepository {
               providedmunicipality: municipality,
             )
             : municipality;
-    final id = _generateId(species.id, timestamp ?? DateTime.now(), type);
+    final id = _generateId(
+      species.id,
+      timestamp ?? DateTime.now(),
+      type,
+      customListId,
+    );
     final observation = Observation(
       id: id,
       species: species,
@@ -62,6 +72,7 @@ class ObservationRepository {
       timestamp: timestamp ?? DateTime.now(),
       position: position,
       municipality: locationDescription,
+      customListId: type == ObservationType.custom ? customListId : null,
     );
 
     _observations.add(observation);
@@ -145,8 +156,10 @@ class ObservationRepository {
     String speciesId,
     DateTime timestamp,
     ObservationType type,
+    String? customListId,
   ) {
-    return '$speciesId-${type.storageKey}-${timestamp.millisecondsSinceEpoch}';
+    final listPart = customListId == null ? '' : '-$customListId';
+    return '$speciesId-${type.storageKey}$listPart-${timestamp.millisecondsSinceEpoch}';
   }
 
   // Initialize the database and load observations

@@ -8,73 +8,20 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../core/enums/observation_type.dart';
 import '../../../core/models/observation.dart';
+import '../../../core/models/custom_list.dart';
 import '../../../core/repositories/observation_repository.dart';
+import '../../../core/repositories/custom_list_repository.dart';
+import '../formatters/observation_text_formatter.dart';
 
 // UI screen for exporting observations into files (TXT, JSON).
 class ExportScreen extends StatelessWidget {
   const ExportScreen({super.key});
 
-  // helper method to format DateTime into a readable string (e.g., "1.1.2026")
-  String _formatDate(DateTime? date) {
-    if (date == null) return '';
-    return '${date.day}.${date.month}.${date.year}';
-  }
-
-  // creates a human-readable text content of the observations, sorted by type and date, with a global index
-  String _generateTextContent(List<Observation> observations) {
-    final buffer = StringBuffer();
-
-    // 1. sort the observations by timestamp (oldest first), but keep those without timestamp at the end
-    final sortedObs = List<Observation>.from(observations)..sort((a, b) {
-      if (a.timestamp == null && b.timestamp == null) return 0;
-      if (a.timestamp == null) return -1;
-      if (b.timestamp == null) return 1;
-      return a.timestamp!.compareTo(b.timestamp!);
-    });
-
-    // 2. set up the sections we want to print, in the desired order
-    final sections = [
-      (type: ObservationType.yearly, header: 'Vuodenpinnat'),
-      (type: ObservationType.yard, header: 'Pihapinnat'),
-      (type: ObservationType.life, header: 'Elämänpinnat'),
-    ];
-
-    // 3. go through each section, filter the observations by type, and print them with a global index
-    for (var i = 0; i < sections.length; i++) {
-      final section = sections[i];
-      final typeObs = sortedObs.where((o) => o.type == section.type).toList();
-
-      // print the section header only if there are observations of that type
-      buffer.writeln(section.header);
-
-      // start the index at 1
-      int index = 1;
-
-      for (final obs in typeObs) {
-        final dateStr = _formatDate(obs.timestamp);
-        final municipalityStr = obs.municipality ?? '';
-
-        // e.g., 1. talitiainen 1.1.2026 oulu
-        final line =
-            '$index. ${obs.species.commonName.toLowerCase()} $dateStr $municipalityStr'
-                .trim();
-
-        // convert multiple spaces to a single space
-        buffer.writeln(line.replaceAll(RegExp(r'\s+'), ' '));
-        index++;
-      }
-
-      // add an extra line break between sections, but not after the last one
-      if (i < sections.length - 1) {
-        buffer.writeln();
-      }
-    }
-
-    return buffer.toString();
-  }
-
   // creates a JSON string representing the list of observations, suitable for backup/restore purposes
-  String _generateJsonContent(List<Observation> observations) {
+  String _generateJsonContent(
+    List<Observation> observations,
+    List<CustomList> customLists,
+  ) {
     final list =
         observations.map((obs) {
           return {
@@ -88,9 +35,13 @@ class ExportScreen extends StatelessWidget {
             'latitude': obs.position?.latitude,
             'longitude': obs.position?.longitude,
             'municipality': obs.municipality,
+            'customListId': obs.customListId,
           };
         }).toList();
-    return jsonEncode(list);
+    return jsonEncode({
+      'customLists': [for (final customList in customLists) customList.toMap()],
+      'observations': list,
+    });
   }
 
   // saves the given content to a temporary file and shares it using the system's share dialog
@@ -125,6 +76,9 @@ class ExportScreen extends StatelessWidget {
     // gets all observations from the repository to prepare the export content
     final repository = context.read<ObservationRepository>();
     final observations = repository.getAll();
+    final customLists =
+        context.read<CustomListRepository>().current?.lists ??
+        const <CustomList>[];
 
     return Scaffold(
       appBar: AppBar(title: const Text('Tulosta havainnot')),
@@ -139,7 +93,10 @@ class ExportScreen extends StatelessWidget {
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: () async {
-                final txtContent = _generateTextContent(observations);
+                final txtContent = formatObservationsAsText(
+                  observations,
+                  customLists: customLists,
+                );
                 await _exportFile(
                   context,
                   txtContent,
@@ -153,7 +110,10 @@ class ExportScreen extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () async {
-                final jsonContent = _generateJsonContent(observations);
+                final jsonContent = _generateJsonContent(
+                  observations,
+                  customLists,
+                );
                 await _exportFile(
                   context,
                   jsonContent,

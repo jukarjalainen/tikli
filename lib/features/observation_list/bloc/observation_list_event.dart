@@ -21,13 +21,30 @@ class ObservationListDataChanged extends ObservationListEvent {
 }
 
 class ObservationListFilterChanged extends ObservationListEvent {
-  const ObservationListFilterChanged(this.type, {this.year});
+  const ObservationListFilterChanged(this.type, {this.year, this.customListId});
 
   final ObservationType type;
   final int? year;
 
+  /// The custom list to show, when the user picks one.
+  final String? customListId;
+
   @override
-  List<Object?> get props => [type, year];
+  List<Object?> get props => [type, year, customListId];
+}
+
+class ObservationListCustomListsChanged extends ObservationListEvent {
+  const ObservationListCustomListsChanged(this.snapshot);
+
+  final CustomListsSnapshot snapshot;
+
+  @override
+  List<Object?> get props => [snapshot];
+}
+
+/// Asks the bloc to check whether the calendar year has changed.
+class ObservationListYearCheckRequested extends ObservationListEvent {
+  const ObservationListYearCheckRequested();
 }
 
 class ObservationListObservationDeleted extends ObservationListEvent {

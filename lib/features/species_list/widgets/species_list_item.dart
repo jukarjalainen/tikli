@@ -10,7 +10,7 @@ class SpeciesListItem extends StatelessWidget {
     required this.selected,
     required this.yearlyObserved,
     required this.lifeObserved,
-    required this.yardObserved,
+    this.customListFlag,
     required this.onTap,
   });
 
@@ -18,7 +18,9 @@ class SpeciesListItem extends StatelessWidget {
   final bool selected;
   final bool yearlyObserved;
   final bool lifeObserved;
-  final bool yardObserved;
+
+  /// Initial of the last used custom list, when the species is on that list.
+  final String? customListFlag;
   final VoidCallback onTap;
 
   static const _selectedColor = Color(0xFF57BF32);
@@ -35,7 +37,7 @@ class SpeciesListItem extends StatelessWidget {
     final flags = <Widget>[
       if (yearlyObserved) _buildBinocularFlag('V'),
       if (lifeObserved) _buildStarFlag('E'),
-      if (yardObserved) _buildHouseFlag('P'),
+      if (customListFlag case final flag?) _buildCustomListFlag(flag),
     ];
 
     return Padding(
@@ -121,8 +123,8 @@ class SpeciesListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildHouseFlag(String label) {
-    final houseColor = selected ? Colors.white : const Color(0xFFD7E9FF);
+  Widget _buildCustomListFlag(String label) {
+    final flagColor = selected ? Colors.white : const Color(0xFFD7E9FF);
     final letterColor = selected ? _selectedColor : const Color(0xFF1E88E5);
     return SizedBox(
       width: 28,
@@ -130,7 +132,7 @@ class SpeciesListItem extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Icon(Icons.house_rounded, color: houseColor, size: 24),
+          Icon(Icons.bookmark_rounded, color: flagColor, size: 26),
           Text(
             label,
             style: TextStyle(

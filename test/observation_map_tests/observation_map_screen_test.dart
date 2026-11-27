@@ -11,6 +11,8 @@ import 'package:tikli/core/repositories/observation_repository.dart';
 import 'package:tikli/features/observation_list/bloc/observation_list_bloc.dart';
 import 'package:tikli/features/observation_map/presentation/observation_map_screen.dart';
 
+import '../helpers/observation_fakes.dart';
+
 class _MockObservationRepository extends Mock
     implements ObservationRepository {}
 
@@ -31,8 +33,10 @@ void main() {
       () => repository.watchAll(),
     ).thenAnswer((_) => Stream.value([observation]));
 
-    final bloc = ObservationListBloc(observationRepository: repository)
-      ..add(const ObservationListSubscriptionRequested());
+    final bloc = ObservationListBloc(
+      observationRepository: repository,
+      customListRepository: fakeCustomListRepository(),
+    )..add(const ObservationListSubscriptionRequested());
     addTearDown(bloc.close);
 
     await tester.pumpWidget(
@@ -55,9 +59,6 @@ void main() {
     expect(InteractiveFlag.hasRotate(interaction.flags), isFalse);
     expect(InteractiveFlag.hasDrag(interaction.flags), isTrue);
     expect(InteractiveFlag.hasPinchZoom(interaction.flags), isTrue);
-    expect(
-      interaction.cursorKeyboardRotationOptions.isKeyTrigger,
-      isNotNull,
-    );
+    expect(interaction.cursorKeyboardRotationOptions.isKeyTrigger, isNotNull);
   });
 }

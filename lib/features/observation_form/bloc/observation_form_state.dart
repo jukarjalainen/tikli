@@ -9,6 +9,8 @@ class ObservationFormState extends Equatable {
     this.timestamp,
     Set<ObservationType>? selectedTypes,
     this.municipality,
+    this.customLists = const [],
+    this.selectedCustomListId,
     this.status = ObservationFormStatus.editing,
     this.errorMessage,
   }) : selectedSpecies = List.unmodifiable(selectedSpecies),
@@ -19,6 +21,12 @@ class ObservationFormState extends Equatable {
   final LatLng? position;
   final DateTime? timestamp;
   final String? municipality;
+
+  /// The custom lists to pick from, oldest first.
+  final List<CustomList> customLists;
+
+  /// The custom list the observation is saved to, if any.
+  final String? selectedCustomListId;
   final ObservationFormStatus status;
   final String? errorMessage;
 
@@ -31,6 +39,8 @@ class ObservationFormState extends Equatable {
     bool clearTimestamp = false,
     String? municipality,
     bool clearmunicipality = false,
+    List<CustomList>? customLists,
+    String? selectedCustomListId,
     ObservationFormStatus? status,
     String? errorMessage,
   }) {
@@ -44,12 +54,21 @@ class ObservationFormState extends Equatable {
       timestamp: clearTimestamp ? null : (timestamp ?? this.timestamp),
       municipality:
           clearmunicipality ? null : (municipality ?? this.municipality),
+      customLists: customLists ?? this.customLists,
+      selectedCustomListId: selectedCustomListId ?? this.selectedCustomListId,
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 
   bool get isSaving => status == ObservationFormStatus.saving;
+
+  CustomList? get selectedCustomList {
+    for (final list in customLists) {
+      if (list.id == selectedCustomListId) return list;
+    }
+    return null;
+  }
 
   @override
   List<Object?> get props => [
@@ -58,6 +77,8 @@ class ObservationFormState extends Equatable {
     position,
     timestamp,
     municipality,
+    customLists,
+    selectedCustomListId,
     status,
     errorMessage,
   ];

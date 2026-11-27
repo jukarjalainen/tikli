@@ -64,7 +64,7 @@ class ObservationMapScreen extends StatelessWidget {
                             color:
                                 observation.type == ObservationType.life
                                     ? Colors.green
-                                    : observation.type == ObservationType.yard
+                                    : observation.type == ObservationType.custom
                                     ? Colors.orange
                                     : Colors.red,
                           ),

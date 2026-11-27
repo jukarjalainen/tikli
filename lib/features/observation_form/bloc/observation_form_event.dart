@@ -67,3 +67,23 @@ class ObservationFormSpeciesRemoved extends ObservationFormEvent {
 class ObservationFormSubmitted extends ObservationFormEvent {
   const ObservationFormSubmitted();
 }
+
+/// Picks the custom list the observation is saved to.
+class ObservationFormCustomListSelected extends ObservationFormEvent {
+  const ObservationFormCustomListSelected(this.id);
+
+  final String id;
+
+  @override
+  List<Object?> get props => [id];
+}
+
+/// Creates a custom list named [name] and picks it.
+class ObservationFormCustomListAdded extends ObservationFormEvent {
+  const ObservationFormCustomListAdded(this.name);
+
+  final String name;
+
+  @override
+  List<Object?> get props => [name];
+}

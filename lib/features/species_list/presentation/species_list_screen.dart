@@ -1,4 +1,4 @@
-// UI screen showing the comprehensive list of bird species. 
+// UI screen showing the comprehensive list of bird species.
 // Allows users to select a species for a new observation or add a rare species.
 
 import 'package:flutter/material.dart';
@@ -16,7 +16,7 @@ import '../widgets/rare_species_dialog.dart';
 class SpeciesListScreen extends StatelessWidget {
   const SpeciesListScreen({super.key});
 
- Future<void> _showRareSpeciesDialog(BuildContext context) async {
+  Future<void> _showRareSpeciesDialog(BuildContext context) async {
     // Get existing species
     final existingSpecies = context.read<SpeciesListBloc>().state.species;
 
@@ -191,10 +191,18 @@ class _SpeciesListViewState extends State<_SpeciesListView> {
     final observations = context.select(
       (ObservationListBloc bloc) => bloc.state.observations,
     );
-    final currentYear = DateTime.now().year;
+    final currentYear = context.select(
+      (ObservationListBloc bloc) => bloc.state.currentYear,
+    );
+    final activeCustomList = context.select(
+      (ObservationListBloc bloc) => bloc.state.activeCustomList,
+    );
+    final activeName = activeCustomList?.name ?? '';
+    final customListFlag =
+        activeName.isEmpty ? null : activeName.characters.first.toUpperCase();
     final yearlyObservedIds = <String>{};
     final lifeObservedIds = <String>{};
-    final yardObservedIds = <String>{};
+    final customListObservedIds = <String>{};
 
     for (final observation in observations) {
       switch (observation.type) {
@@ -206,8 +214,11 @@ class _SpeciesListViewState extends State<_SpeciesListView> {
         case ObservationType.life:
           lifeObservedIds.add(observation.species.id);
           break;
-        case ObservationType.yard:
-          yardObservedIds.add(observation.species.id);
+        case ObservationType.custom:
+          if (activeCustomList != null &&
+              observation.customListId == activeCustomList.id) {
+            customListObservedIds.add(observation.species.id);
+          }
           break;
       }
     }
@@ -227,7 +238,10 @@ class _SpeciesListViewState extends State<_SpeciesListView> {
               selected: isSelected,
               yearlyObserved: yearlyObservedIds.contains(item.id),
               lifeObserved: lifeObservedIds.contains(item.id),
-              yardObserved: yardObservedIds.contains(item.id),
+              customListFlag:
+                  customListObservedIds.contains(item.id)
+                      ? customListFlag
+                      : null,
               onTap:
                   () => context.read<SpeciesListBloc>().add(
                     SpeciesSelectionToggled(item.id),

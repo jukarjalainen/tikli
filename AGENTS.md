@@ -10,13 +10,14 @@ This is a cross-platform Flutter application named "tikli" using Flutter 3.7+ wi
 
 ## Purpose and core features of the application
 - Keep track of bird observations
-- There are three types of observations: Yearly, all time, and yard
-- Every point type has its own list
+- There are two permanent lists and observation types: yearly (Vuodenpinnat) and all time (Elämänpinnat)
+- Every other list is a custom list the user names, e.g. "Pihapinna" or "Mökki"
+- Every list has its own species list
 - Observations can be seen on a obervation map
 - When the year change, a new yearly list is started
 - A single species is a one point in a list, do not count same species twice.
 - The observation lists can be outputted as a text and json files
-- Yard points (pihapinna) can be named and user can start a new if moves to another place
+- Custom lists are added from the observation form ("Lisää uusi")
 
 
 ## Architecture & Structure

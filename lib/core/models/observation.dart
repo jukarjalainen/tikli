@@ -17,6 +17,7 @@ class Observation extends Equatable {
     this.timestamp, // Optional timestamp for when the observation occurred
     this.position, // Optional geographical position (latitude and longitude)
     this.municipality, // Optional municipality or location description
+    this.customListId, // The custom list a custom observation belongs to
   });
 
   // Fields representing the properties of an observation
@@ -26,6 +27,9 @@ class Observation extends Equatable {
   final DateTime? timestamp; // The date and time of the observation
   final LatLng? position; // The geographical position of the observation
   final String? municipality; // The municipality or description of the location
+  // Id of the custom list (see CustomList) for custom observations, otherwise
+  // null.
+  final String? customListId;
 
   // Method to create a copy of the current Observation with modified fields
   Observation copyWith({
@@ -35,6 +39,7 @@ class Observation extends Equatable {
     DateTime? timestamp,
     LatLng? position,
     String? municipality,
+    String? customListId,
   }) {
     return Observation(
       id:
@@ -48,6 +53,7 @@ class Observation extends Equatable {
       municipality:
           municipality ??
           this.municipality, // Use the new municipality if provided
+      customListId: customListId ?? this.customListId,
     );
   }
 
@@ -60,6 +66,7 @@ class Observation extends Equatable {
     timestamp,
     position,
     municipality,
+    customListId,
   ];
 
   // Converts the Observation object into a map for database storage
@@ -74,6 +81,7 @@ class Observation extends Equatable {
       'longitude':
           position?.longitude, // Store longitude if position is available
       'municipality': municipality, // Store the municipality
+      'customListId': customListId, // Store the custom list of the observation
     };
   }
 
@@ -92,6 +100,7 @@ class Observation extends Equatable {
               ? LatLng(map['latitude'] as double, map['longitude'] as double)
               : null,
       municipality: map['municipality'] as String?,
+      customListId: map['customListId'] as String?,
     );
   }
 }

@@ -1,4 +1,4 @@
-// Main UI screen displaying a scrollable list of saved bird observations. 
+// Main UI screen displaying a scrollable list of saved bird observations.
 // Reacts to state changes from the ObservationListBloc.
 
 import 'package:flutter/material.dart';
@@ -25,18 +25,6 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
   // Large number to simulate infinite scrolling
   static const int _virtualPageCount = 10000;
   static const int _typeCount = 3; // ObservationType.values.length
-
-  String _titleForType(ObservationType type) {
-    switch (type) {
-      case ObservationType.yearly:
-        return 'Vuodenpinnat';
-      case ObservationType.life:
-        return 'Elämänpinnat';
-      case ObservationType.yard:
-        return 'Pihapinnat';
-    }
-    return 'Pinnat';
-  }
 
   int _getPageIndexForType(ObservationType type) {
     return ObservationType.values.indexOf(type);
@@ -73,9 +61,11 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
       appBar: AppBar(
         title: BlocBuilder<ObservationListBloc, ObservationListState>(
           buildWhen:
-              (previous, current) => previous.filterType != current.filterType,
+              (previous, current) =>
+                  previous.filterType != current.filterType ||
+                  previous.shownCustomList != current.shownCustomList,
           builder: (context, state) {
-            return Text(_titleForType(state.filterType));
+            return Text(state.choiceFor(state.filterType).label);
           },
         ),
         backgroundColor: const Color(0xFF57BF32),
@@ -142,22 +132,7 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
             itemBuilder: (context, pageIndex) {
               final pageType = _getTypeForPageIndex(pageIndex);
 
-              // Get observations for this page's type
-              final bloc = context.read<ObservationListBloc>();
-              final pageObservations =
-                  bloc.state.observations
-                      .where((obs) => obs.type == pageType)
-                      .toList();
-
-              // For yearly, filter by selected year
-              final displayObservations =
-                  pageType == ObservationType.yearly
-                      ? pageObservations
-                          .where(
-                            (obs) => obs.timestamp?.year == state.selectedYear,
-                          )
-                          .toList()
-                      : pageObservations;
+              final displayObservations = state.observationsFor(pageType);
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,33 +145,19 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                         Row(
                           children: [
                             Expanded(
-                              child: DropdownButtonFormField<ObservationType>(
-                                initialValue: state.filterType,
-                                decoration: const InputDecoration(
-                                  labelText: 'Pinnatyyppi',
-                                ),
-                                items:
-                                    ObservationType.values
-                                        .map(
-                                          (type) => DropdownMenuItem(
-                                            value: type,
-                                            child: Text(type.label),
-                                          ),
-                                        )
-                                        .toList(),
-                                onChanged: (value) {
-                                  if (value == null) return;
-                                  context.read<ObservationListBloc>().add(
-                                    ObservationListFilterChanged(value),
-                                  );
-                                },
+                              flex: 3,
+                              child: _ListDropdown(
+                                key: ValueKey(state.choiceFor(pageType)),
+                                state: state,
+                                shown: state.choiceFor(pageType),
                               ),
                             ),
-                            if (state.filterType == ObservationType.yearly) ...[
+                            if (pageType == ObservationType.yearly) ...[
                               const SizedBox(width: 16),
                               Expanded(
+                                flex: 2,
                                 child: DropdownButtonFormField<int>(
-                                  initialValue: state.selectedYear,
+                                  initialValue: state.shownYear,
                                   decoration: const InputDecoration(
                                     labelText: 'Vuosi',
                                   ),
@@ -235,7 +196,14 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
                   Expanded(
                     child:
                         displayObservations.isEmpty
-                            ? const _EmptyState()
+                            ? _EmptyState(
+                              message:
+                                  pageType == ObservationType.custom &&
+                                          state.customLists.isEmpty
+                                      ? 'Ei omia listoja. Lisää lista '
+                                          'havaintolomakkeella.'
+                                      : 'No observations for this filter',
+                            )
                             : ListView.separated(
                               itemCount: displayObservations.length,
                               separatorBuilder:
@@ -260,18 +228,59 @@ class _ObservationListScreenState extends State<ObservationListScreen> {
   }
 }
 
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+/// Picks the list to show from every list: the yearly list, the life list and
+/// each custom list.
+class _ListDropdown extends StatelessWidget {
+  const _ListDropdown({super.key, required this.state, required this.shown});
+
+  static const pickerKey = Key('observationListPicker');
+
+  final ObservationListState state;
+
+  /// The list this page shows.
+  final ObservationListChoice shown;
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return DropdownButtonFormField<ObservationListChoice>(
+      key: pickerKey,
+      initialValue: shown,
+      isExpanded: true,
+      decoration: const InputDecoration(labelText: 'Lista'),
+      items: [
+        for (final choice in state.listChoices)
+          DropdownMenuItem(
+            value: choice,
+            child: Text(choice.label, overflow: TextOverflow.ellipsis),
+          ),
+      ],
+      onChanged: (choice) {
+        if (choice == null) return;
+        context.read<ObservationListBloc>().add(
+          ObservationListFilterChanged(
+            choice.type,
+            customListId: choice.customList?.id,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.filter_list_off, size: 48, color: Colors.grey),
-          SizedBox(height: 8),
-          Text('No observations for this filter'),
+          const Icon(Icons.filter_list_off, size: 48, color: Colors.grey),
+          const SizedBox(height: 8),
+          Text(message, textAlign: TextAlign.center),
         ],
       ),
     );

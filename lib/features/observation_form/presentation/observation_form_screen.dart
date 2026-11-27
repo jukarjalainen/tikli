@@ -6,14 +6,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cache/flutter_map_cache.dart';
+import 'package:http_cache_core/http_cache_core.dart';
+import 'package:http_cache_file_store/http_cache_file_store.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../../../core/enums/observation_type.dart';
 import '../../../core/map/map_interaction_options.dart';
 import '../../../core/models/species.dart';
 import '../bloc/observation_form_bloc.dart';
+import '../widgets/custom_list_name_dialog.dart';
+import '../widgets/custom_list_picker.dart';
 import '../../species_list/bloc/species_list_bloc.dart';
 
 class ObservationFormScreen extends StatefulWidget {
@@ -28,18 +35,37 @@ class ObservationFormScreen extends StatefulWidget {
 class _ObservationFormScreenState extends State<ObservationFormScreen> {
   late final DateFormat _dateFormat;
   final MapController _mapController = MapController();
+  late final MemCacheStore _memoryTileCacheStore;
+  late CacheStore _tileCacheStore;
   Timer? _mapMoveDebounce;
 
   @override
   void initState() {
     super.initState();
     _dateFormat = DateFormat('d.M.yyyy HH:mm');
+    _memoryTileCacheStore = MemCacheStore(maxSize: 31457280);
+    _tileCacheStore = _memoryTileCacheStore;
+    unawaited(_enablePersistentTileCache());
   }
 
   @override
   void dispose() {
+    unawaited(_tileCacheStore.close());
     _mapMoveDebounce?.cancel();
     super.dispose();
+  }
+
+  Future<void> _enablePersistentTileCache() async {
+    final cacheDirectory = await getTemporaryDirectory();
+    final tileCachePath = p.join(cacheDirectory.path, 'map_tiles');
+    final fileStore = FileCacheStore(tileCachePath);
+    _tileCacheStore = BackupCacheStore(
+      primary: _memoryTileCacheStore,
+      secondary: fileStore,
+    );
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -137,17 +163,11 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    ...ObservationType.values.map(
-                      (type) => CheckboxListTile(
-                        value: state.selectedTypes.contains(type),
-                        onChanged:
-                            (_) => context.read<ObservationFormBloc>().add(
-                              ObservationTypeToggled(type),
-                            ),
-                        title: Text(type.label),
-                        activeColor: const Color(0xFF57BF32),
-                      ),
-                    ),
+                    for (final type in ObservationType.values)
+                      if (type == ObservationType.custom)
+                        _CustomListRow(state: state)
+                      else
+                        _TypeCheckbox(type: type, state: state),
                     const SizedBox(height: 16),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
@@ -218,8 +238,7 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                                 options: MapOptions(
                                   initialCenter: state.position!,
                                   initialZoom: 15,
-                                  interactionOptions:
-                                      northUpInteractionOptions,
+                                  interactionOptions: northUpInteractionOptions,
                                   onPositionChanged: (camera, hasGesture) {
                                     if (!hasGesture) {
                                       return;
@@ -246,6 +265,10 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                                     urlTemplate:
                                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                                     userAgentPackageName: 'fi.tikli.app',
+                                    tileProvider: CachedTileProvider(
+                                      store: _tileCacheStore,
+                                      maxStale: const Duration(days: 30),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -393,5 +416,72 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
       return;
     }
     bloc.add(ObservationFormLocationChanged(LatLng(lat, lng)));
+  }
+}
+
+/// Checkbox for saving the observation to the list of [type].
+class _TypeCheckbox extends StatelessWidget {
+  const _TypeCheckbox({required this.type, required this.state, this.title});
+
+  final ObservationType type;
+  final ObservationFormState state;
+
+  /// Shown left of the checkbox instead of the label of [type].
+  final Widget? title;
+
+  @override
+  Widget build(BuildContext context) {
+    return CheckboxListTile(
+      value: state.selectedTypes.contains(type),
+      onChanged:
+          (_) => context.read<ObservationFormBloc>().add(
+            ObservationTypeToggled(type),
+          ),
+      title: title ?? Text(type.label),
+      activeColor: const Color(0xFF57BF32),
+    );
+  }
+}
+
+/// The custom list checkbox. A dropdown for picking or adding the custom list
+/// to save to sits between its label and the checkbox, which lines up with
+/// the other list checkboxes.
+class _CustomListRow extends StatelessWidget {
+  const _CustomListRow({required this.state});
+
+  final ObservationFormState state;
+
+  Future<void> _addCustomList(BuildContext context) async {
+    final bloc = context.read<ObservationFormBloc>();
+    final name = await CustomListNameDialog.show(
+      context,
+      existingLists: state.customLists,
+    );
+    if (name != null) bloc.add(ObservationFormCustomListAdded(name));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _TypeCheckbox(
+      type: ObservationType.custom,
+      state: state,
+      title: Row(
+        children: [
+          Text(ObservationType.custom.label),
+          const SizedBox(width: 16),
+          Expanded(
+            child: CustomListPicker(
+              customLists: state.customLists,
+              selectedId: state.selectedCustomListId,
+              onSelected:
+                  (id) => context.read<ObservationFormBloc>().add(
+                    ObservationFormCustomListSelected(id),
+                  ),
+              onAddNew: () => _addCustomList(context),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

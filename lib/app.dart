@@ -8,21 +8,25 @@ import 'app_router.dart';
 import 'core/constants/app_routes.dart';
 import 'core/repositories/observation_repository.dart';
 import 'core/repositories/species_repository.dart';
+import 'core/repositories/custom_list_repository.dart';
 import 'core/services/location_permission_service.dart';
 import 'core/services/location_service.dart';
 import 'core/services/reverse_geocoding_service.dart';
 import 'features/observation_list/bloc/observation_list_bloc.dart';
 import 'features/species_list/bloc/species_list_bloc.dart';
+import 'shared/widgets/year_rollover_watcher.dart';
 
 class TikliApp extends StatefulWidget {
   const TikliApp({
     super.key,
     required this.observationRepository,
     required this.speciesRepository,
+    required this.customListRepository,
   });
 
   final ObservationRepository observationRepository;
   final SpeciesRepository speciesRepository;
+  final CustomListRepository customListRepository;
 
   @override
   State<TikliApp> createState() => _TikliAppState();
@@ -37,7 +41,10 @@ class _TikliAppState extends State<TikliApp> {
   @override
   void initState() {
     super.initState();
-    _router = AppRouter(observationRepository: widget.observationRepository);
+    _router = AppRouter(
+      observationRepository: widget.observationRepository,
+      customListRepository: widget.customListRepository,
+    );
     _locationPermissionService = LocationPermissionService();
     _locationService = LocationService();
     _reverseGeocodingService = ReverseGeocodingService();
@@ -50,6 +57,7 @@ class _TikliAppState extends State<TikliApp> {
   void dispose() {
     _reverseGeocodingService.dispose();
     widget.observationRepository.dispose();
+    widget.customListRepository.dispose();
     super.dispose();
   }
 
@@ -62,6 +70,9 @@ class _TikliAppState extends State<TikliApp> {
         ),
         RepositoryProvider<SpeciesRepository>.value(
           value: widget.speciesRepository,
+        ),
+        RepositoryProvider<CustomListRepository>.value(
+          value: widget.customListRepository,
         ),
         RepositoryProvider<LocationService>.value(value: _locationService),
         RepositoryProvider<ReverseGeocodingService>.value(
@@ -80,20 +91,23 @@ class _TikliAppState extends State<TikliApp> {
             create:
                 (context) => ObservationListBloc(
                   observationRepository: widget.observationRepository,
+                  customListRepository: widget.customListRepository,
                 )..add(const ObservationListSubscriptionRequested()),
           ),
         ],
-        child: MaterialApp(
-          title: 'Tikli',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF57BF32),
+        child: YearRolloverWatcher(
+          child: MaterialApp(
+            title: 'Tikli',
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF57BF32),
+              ),
+              useMaterial3: true,
             ),
-            useMaterial3: true,
+            initialRoute: AppRoutes.speciesList,
+            onGenerateRoute: _router.onGenerateRoute,
           ),
-          initialRoute: AppRoutes.speciesList,
-          onGenerateRoute: _router.onGenerateRoute,
         ),
       ),
     );

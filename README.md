@@ -7,7 +7,7 @@ Tikli (Finnish for Goldfinch) is a Flutter-based mobile application designed for
 - Fast Species Selection: Users can choose from a curated list of common Finnish bird species without havin to type anything. A manual entry option is available for rare sightings.
 - Observations are categorized into three specific types
    - Vuodenpinna (Yearly)
-   - Pihapinna (Yard)
+   - Oma lista (Custom)
    - Elämänpinna (Life)
 
 - Geolocation Integration: Automatically fetches the user's current location and timestamp for each entry

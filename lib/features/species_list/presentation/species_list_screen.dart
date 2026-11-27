@@ -191,7 +191,12 @@ class _SpeciesListViewState extends State<_SpeciesListView> {
     final observations = context.select(
       (ObservationListBloc bloc) => bloc.state.observations,
     );
-    final currentYear = DateTime.now().year;
+    final currentYear = context.select(
+      (ObservationListBloc bloc) => bloc.state.currentYear,
+    );
+    final activeYardListId = context.select(
+      (ObservationListBloc bloc) => bloc.state.activeYardListId,
+    );
     final yearlyObservedIds = <String>{};
     final lifeObservedIds = <String>{};
     final yardObservedIds = <String>{};
@@ -207,7 +212,9 @@ class _SpeciesListViewState extends State<_SpeciesListView> {
           lifeObservedIds.add(observation.species.id);
           break;
         case ObservationType.yard:
-          yardObservedIds.add(observation.species.id);
+          if (observation.yardListId == activeYardListId) {
+            yardObservedIds.add(observation.species.id);
+          }
           break;
       }
     }

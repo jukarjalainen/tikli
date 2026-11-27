@@ -17,12 +17,14 @@ class ObservationRepository {
   ObservationRepository({
     required this.speciesRepository,
     ReverseGeocodingService? geocodingService,
-  }) : _reverseGeocodingService = geocodingService ?? ReverseGeocodingService(),
+    DatabaseService? databaseService,
+  }) : _dbService = databaseService ?? DatabaseService(),
+       _reverseGeocodingService = geocodingService ?? ReverseGeocodingService(),
        _ownsGeocodingService = geocodingService == null {
     _initDatabase();
   }
   final SpeciesRepository speciesRepository;
-  final DatabaseService _dbService = DatabaseService();
+  final DatabaseService _dbService;
 
   final List<Observation> _observations = [];
   final StreamController<List<Observation>> _controller =
@@ -44,7 +46,12 @@ class ObservationRepository {
     DateTime? timestamp,
     LatLng? position,
     String? municipality,
+    String? yardListId,
   }) async {
+    assert(
+      (type == ObservationType.yard) == (yardListId != null),
+      'yardListId is required for yard observations and only for them',
+    );
     final locationDescription =
         position != null
             ? await _resolvemunicipality(
@@ -52,7 +59,12 @@ class ObservationRepository {
               providedmunicipality: municipality,
             )
             : municipality;
-    final id = _generateId(species.id, timestamp ?? DateTime.now(), type);
+    final id = _generateId(
+      species.id,
+      timestamp ?? DateTime.now(),
+      type,
+      yardListId,
+    );
     final observation = Observation(
       id: id,
       species: species,
@@ -60,6 +72,7 @@ class ObservationRepository {
       timestamp: timestamp ?? DateTime.now(),
       position: position,
       municipality: locationDescription,
+      yardListId: type == ObservationType.yard ? yardListId : null,
     );
 
     _observations.add(observation);
@@ -143,8 +156,10 @@ class ObservationRepository {
     String speciesId,
     DateTime timestamp,
     ObservationType type,
+    String? yardListId,
   ) {
-    return '$speciesId-${type.storageKey}-${timestamp.millisecondsSinceEpoch}';
+    final listPart = yardListId == null ? '' : '-$yardListId';
+    return '$speciesId-${type.storageKey}$listPart-${timestamp.millisecondsSinceEpoch}';
   }
 
   // Initialize the database and load observations
@@ -162,6 +177,6 @@ class ObservationRepository {
         return Observation.fromMap(obs, species);
       }),
     );
-    _controller.add(_observations);
+    _notify();
   }
 }

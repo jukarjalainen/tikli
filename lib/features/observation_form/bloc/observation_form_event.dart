@@ -67,3 +67,23 @@ class ObservationFormSpeciesRemoved extends ObservationFormEvent {
 class ObservationFormSubmitted extends ObservationFormEvent {
   const ObservationFormSubmitted();
 }
+
+/// Picks the yard list yard observations are saved to.
+class ObservationFormYardListSelected extends ObservationFormEvent {
+  const ObservationFormYardListSelected(this.id);
+
+  final String id;
+
+  @override
+  List<Object?> get props => [id];
+}
+
+/// Creates a yard list named [name] and picks it.
+class ObservationFormYardListAdded extends ObservationFormEvent {
+  const ObservationFormYardListAdded(this.name);
+
+  final String name;
+
+  @override
+  List<Object?> get props => [name];
+}

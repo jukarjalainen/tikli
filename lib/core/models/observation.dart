@@ -17,6 +17,7 @@ class Observation extends Equatable {
     this.timestamp, // Optional timestamp for when the observation occurred
     this.position, // Optional geographical position (latitude and longitude)
     this.municipality, // Optional municipality or location description
+    this.yardListId, // The yard list a yard observation belongs to
   });
 
   // Fields representing the properties of an observation
@@ -26,6 +27,8 @@ class Observation extends Equatable {
   final DateTime? timestamp; // The date and time of the observation
   final LatLng? position; // The geographical position of the observation
   final String? municipality; // The municipality or description of the location
+  // Id of the yard list (see YardList) for yard observations, otherwise null.
+  final String? yardListId;
 
   // Method to create a copy of the current Observation with modified fields
   Observation copyWith({
@@ -35,6 +38,7 @@ class Observation extends Equatable {
     DateTime? timestamp,
     LatLng? position,
     String? municipality,
+    String? yardListId,
   }) {
     return Observation(
       id:
@@ -48,6 +52,7 @@ class Observation extends Equatable {
       municipality:
           municipality ??
           this.municipality, // Use the new municipality if provided
+      yardListId: yardListId ?? this.yardListId,
     );
   }
 
@@ -60,6 +65,7 @@ class Observation extends Equatable {
     timestamp,
     position,
     municipality,
+    yardListId,
   ];
 
   // Converts the Observation object into a map for database storage
@@ -74,6 +80,7 @@ class Observation extends Equatable {
       'longitude':
           position?.longitude, // Store longitude if position is available
       'municipality': municipality, // Store the municipality
+      'yardListId': yardListId, // Store the yard list of a yard observation
     };
   }
 
@@ -92,6 +99,7 @@ class Observation extends Equatable {
               ? LatLng(map['latitude'] as double, map['longitude'] as double)
               : null,
       municipality: map['municipality'] as String?,
+      yardListId: map['yardListId'] as String?,
     );
   }
 }

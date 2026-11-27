@@ -9,6 +9,8 @@ class ObservationFormState extends Equatable {
     this.timestamp,
     Set<ObservationType>? selectedTypes,
     this.municipality,
+    this.yardLists = const [],
+    this.selectedYardListId,
     this.status = ObservationFormStatus.editing,
     this.errorMessage,
   }) : selectedSpecies = List.unmodifiable(selectedSpecies),
@@ -19,6 +21,12 @@ class ObservationFormState extends Equatable {
   final LatLng? position;
   final DateTime? timestamp;
   final String? municipality;
+
+  /// The yard lists to pick from, oldest first.
+  final List<YardList> yardLists;
+
+  /// The yard list yard observations are saved to.
+  final String? selectedYardListId;
   final ObservationFormStatus status;
   final String? errorMessage;
 
@@ -31,6 +39,8 @@ class ObservationFormState extends Equatable {
     bool clearTimestamp = false,
     String? municipality,
     bool clearmunicipality = false,
+    List<YardList>? yardLists,
+    String? selectedYardListId,
     ObservationFormStatus? status,
     String? errorMessage,
   }) {
@@ -44,12 +54,21 @@ class ObservationFormState extends Equatable {
       timestamp: clearTimestamp ? null : (timestamp ?? this.timestamp),
       municipality:
           clearmunicipality ? null : (municipality ?? this.municipality),
+      yardLists: yardLists ?? this.yardLists,
+      selectedYardListId: selectedYardListId ?? this.selectedYardListId,
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 
   bool get isSaving => status == ObservationFormStatus.saving;
+
+  YardList? get selectedYardList {
+    for (final list in yardLists) {
+      if (list.id == selectedYardListId) return list;
+    }
+    return null;
+  }
 
   @override
   List<Object?> get props => [
@@ -58,6 +77,8 @@ class ObservationFormState extends Equatable {
     position,
     timestamp,
     municipality,
+    yardLists,
+    selectedYardListId,
     status,
     errorMessage,
   ];

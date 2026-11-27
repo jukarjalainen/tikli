@@ -11,6 +11,8 @@ import 'package:tikli/core/repositories/observation_repository.dart';
 import 'package:tikli/features/observation_list/bloc/observation_list_bloc.dart';
 import 'package:tikli/features/observation_map/presentation/observation_map_screen.dart';
 
+import '../helpers/observation_fakes.dart';
+
 class _MockObservationRepository extends Mock
     implements ObservationRepository {}
 
@@ -31,8 +33,10 @@ void main() {
       () => repository.watchAll(),
     ).thenAnswer((_) => Stream.value([observation]));
 
-    final bloc = ObservationListBloc(observationRepository: repository)
-      ..add(const ObservationListSubscriptionRequested());
+    final bloc = ObservationListBloc(
+      observationRepository: repository,
+      yardListRepository: fakeYardListRepository(),
+    )..add(const ObservationListSubscriptionRequested());
     addTearDown(bloc.close);
 
     await tester.pumpWidget(

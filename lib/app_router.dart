@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/constants/app_routes.dart';
 import 'core/models/species.dart';
 import 'core/repositories/observation_repository.dart';
+import 'core/repositories/yard_list_repository.dart';
 import 'core/services/location_service.dart';
 import 'core/services/reverse_geocoding_service.dart';
 import 'features/observation_form/bloc/observation_form_bloc.dart';
@@ -14,10 +15,14 @@ import 'features/species_list/presentation/species_list_screen.dart';
 import 'features/export/presentation/export_screen.dart';
 
 class AppRouter {
-  AppRouter({required ObservationRepository observationRepository})
-    : _observationRepository = observationRepository;
+  AppRouter({
+    required ObservationRepository observationRepository,
+    required YardListRepository yardListRepository,
+  }) : _observationRepository = observationRepository,
+       _yardListRepository = yardListRepository;
 
   final ObservationRepository _observationRepository;
+  final YardListRepository _yardListRepository;
 
   Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -37,6 +42,7 @@ class AppRouter {
               create:
                   (_) => ObservationFormBloc(
                     observationRepository: _observationRepository,
+                    yardListRepository: _yardListRepository,
                     locationService: locationService,
                     reverseGeocodingService: reverseGeocodingService,
                     selectedSpecies: species,
@@ -57,7 +63,10 @@ class AppRouter {
           settings: settings,
         );
       case AppRoutes.export:
-        return MaterialPageRoute(builder: (_) => const ExportScreen());
+        return MaterialPageRoute(
+          builder: (_) => const ExportScreen(),
+          settings: settings,
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => const SpeciesListScreen(),

@@ -1,4 +1,4 @@
-// BLoC (Business Logic Component) managing the state of the observation list. 
+// BLoC (Business Logic Component) managing the state of the observation list.
 // Listens to the ObservationRepository stream and updates the UI state when data changes.
 
 import 'dart:async';
@@ -6,24 +6,37 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../core/enums/observation_type.dart';
 import '../../../core/models/observation.dart';
+import '../../../core/models/yard_list.dart';
 import '../../../core/repositories/observation_repository.dart';
+import '../../../core/repositories/yard_list_repository.dart';
+import '../../../core/utils/clock.dart';
 
 part 'observation_list_event.dart';
 part 'observation_list_state.dart';
 
 class ObservationListBloc
     extends Bloc<ObservationListEvent, ObservationListState> {
-  ObservationListBloc({required ObservationRepository observationRepository})
-    : _observationRepository = observationRepository,
-      super(const ObservationListState()) {
+  ObservationListBloc({
+    required ObservationRepository observationRepository,
+    required YardListRepository yardListRepository,
+    Clock clock = DateTime.now,
+  }) : _observationRepository = observationRepository,
+       _yardListRepository = yardListRepository,
+       _clock = clock,
+       super(ObservationListState(currentYear: clock().year)) {
     on<ObservationListSubscriptionRequested>(_onSubscriptionRequested);
     on<ObservationListDataChanged>(_onDataChanged);
+    on<ObservationListYardListsChanged>(_onYardListsChanged);
     on<ObservationListFilterChanged>(_onFilterChanged);
+    on<ObservationListYearCheckRequested>(_onYearCheckRequested);
     on<ObservationListObservationDeleted>(_onObservationDeleted);
   }
 
   final ObservationRepository _observationRepository;
+  final YardListRepository _yardListRepository;
+  final Clock _clock;
   StreamSubscription<List<Observation>>? _subscription;
+  StreamSubscription<YardListsSnapshot>? _yardListsSubscription;
 
   Future<void> _onSubscriptionRequested(
     ObservationListSubscriptionRequested event,
@@ -31,8 +44,12 @@ class ObservationListBloc
   ) async {
     emit(state.copyWith(status: ObservationListStatus.loading));
     await _subscription?.cancel();
+    await _yardListsSubscription?.cancel();
     _subscription = _observationRepository.watchAll().listen(
       (observations) => add(ObservationListDataChanged(observations)),
+    );
+    _yardListsSubscription = _yardListRepository.watch().listen(
+      (snapshot) => add(ObservationListYardListsChanged(snapshot)),
     );
     add(ObservationListDataChanged(_observationRepository.getAll()));
   }
@@ -41,92 +58,88 @@ class ObservationListBloc
     ObservationListDataChanged event,
     Emitter<ObservationListState> emit,
   ) {
-    int? targetYear;
-    if (state.filterType == ObservationType.yearly) {
-      targetYear = state.selectedYear;
-      if (targetYear == null) {
-        final yearlyObservations =
-            event.observations
-                .where(
-                  (observation) =>
-                      observation.type == ObservationType.yearly &&
-                      observation.timestamp != null,
-                )
-                .toList();
-        if (yearlyObservations.isNotEmpty) {
-          yearlyObservations.sort(
-            (a, b) => b.timestamp!.compareTo(a.timestamp!),
-          );
-          targetYear = yearlyObservations.first.timestamp!.year;
-        } else {
-          targetYear = DateTime.now().year;
-        }
-      }
-    }
-    final filtered = _applyFilter(
-      event.observations,
-      state.filterType,
-      targetYear,
-    );
     emit(
-      state.copyWith(
-        status: ObservationListStatus.ready,
-        observations: event.observations,
-        visibleObservations: filtered,
-        selectedYear: targetYear,
-        clearSelectedYear:
-            state.filterType == ObservationType.yearly ? false : true,
+      _withResolvedYears(
+        state.copyWith(
+          status: ObservationListStatus.ready,
+          observations: event.observations,
+        ),
       ),
     );
+  }
+
+  void _onYardListsChanged(
+    ObservationListYardListsChanged event,
+    Emitter<ObservationListState> emit,
+  ) {
+    final activeChanged = event.snapshot.activeId != state.activeYardListId;
+    final next = state.copyWith(
+      yardLists: event.snapshot.lists,
+      activeYardListId: event.snapshot.activeId,
+      // A newly chosen active list is shown right away.
+      clearSelectedYardList: activeChanged,
+    );
+    emit(_withResolvedYears(_withResolvedYardList(next)));
   }
 
   void _onFilterChanged(
     ObservationListFilterChanged event,
     Emitter<ObservationListState> emit,
   ) {
-    final year =
-        event.type == ObservationType.yearly
-            ? (event.year ?? state.selectedYear ?? DateTime.now().year)
-            : null;
-    final filtered = _applyFilter(state.observations, event.type, year);
     emit(
-      state.copyWith(
-        filterType: event.type,
-        selectedYear: year,
-        clearSelectedYear: event.type == ObservationType.yearly ? false : true,
-        visibleObservations: filtered,
+      _withResolvedYardList(
+        _withResolvedYears(
+          state.copyWith(filterType: event.type),
+          requestedYear: event.year,
+        ),
+        requestedYardListId: event.yardListId,
       ),
     );
   }
 
-  List<Observation> _applyFilter(
-    List<Observation> observations,
-    ObservationType type,
-    int? year,
+  void _onYearCheckRequested(
+    ObservationListYearCheckRequested event,
+    Emitter<ObservationListState> emit,
   ) {
-    final filtered = <Observation>[];
-    final seenSpeciesIds = <String>{};
-    for (final observation in observations) {
-      if (observation.type != type) {
-        continue;
-      }
-      if (type == ObservationType.yearly) {
-        if (observation.timestamp == null) {
-          continue; // Skip yearly observations without timestamp
-        }
-        final targetYear = year ?? DateTime.now().year;
-        if (observation.timestamp!.year != targetYear) {
-          continue;
-        }
-      }
-      final speciesId = observation.species.id;
-      if (seenSpeciesIds.contains(speciesId)) {
-        continue;
-      }
-      seenSpeciesIds.add(speciesId);
-      filtered.add(observation);
+    emit(_withResolvedYears(state));
+  }
+
+  /// Brings [next] up to date with the clock and picks the selected year.
+  ///
+  /// The selection follows the current year, so a new list starts when the year
+  /// changes. An older year stays selected while the user is browsing it and it
+  /// still has observations. [requestedYear] is a year the user just picked.
+  ObservationListState _withResolvedYears(
+    ObservationListState next, {
+    int? requestedYear,
+  }) {
+    final dated = next.copyWith(currentYear: _clock().year);
+    if (dated.filterType != ObservationType.yearly) {
+      return dated.copyWith(clearSelectedYear: true);
     }
-    return filtered;
+    final browsedYear =
+        next.selectedYear == state.currentYear ? null : next.selectedYear;
+    final year = requestedYear ?? browsedYear;
+    return dated.copyWith(
+      selectedYear:
+          dated.availableYears.contains(year) ? year : dated.currentYear,
+    );
+  }
+
+  /// Picks the yard list [next] shows.
+  ///
+  /// The active list is shown unless the user is browsing another list that
+  /// still exists. [requestedYardListId] is a list the user just picked.
+  ObservationListState _withResolvedYardList(
+    ObservationListState next, {
+    String? requestedYardListId,
+  }) {
+    final id = requestedYardListId ?? next.selectedYardListId;
+    final exists = next.yardLists.any((list) => list.id == id);
+    if (id == null || !exists || id == next.activeYardListId) {
+      return next.copyWith(clearSelectedYardList: true);
+    }
+    return next.copyWith(selectedYardListId: id);
   }
 
   Future<void> _onObservationDeleted(
@@ -139,6 +152,7 @@ class ObservationListBloc
   @override
   Future<void> close() async {
     await _subscription?.cancel();
+    await _yardListsSubscription?.cancel();
     return super.close();
   }
 }

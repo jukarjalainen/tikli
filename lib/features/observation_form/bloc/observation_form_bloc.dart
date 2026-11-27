@@ -7,7 +7,9 @@ import 'package:latlong2/latlong.dart';
 
 import '../../../core/enums/observation_type.dart';
 import '../../../core/models/species.dart';
+import '../../../core/models/yard_list.dart';
 import '../../../core/repositories/observation_repository.dart';
+import '../../../core/repositories/yard_list_repository.dart';
 import '../../../core/services/location_service.dart';
 import '../../../core/services/reverse_geocoding_service.dart';
 
@@ -18,12 +20,14 @@ class ObservationFormBloc
     extends Bloc<ObservationFormEvent, ObservationFormState> {
   ObservationFormBloc({
     required ObservationRepository observationRepository,
+    required YardListRepository yardListRepository,
     required LocationService locationService,
     required ReverseGeocodingService reverseGeocodingService,
     required List<Species> selectedSpecies,
     LatLng? initialPosition,
     DateTime? initialTimestamp,
   }) : _observationRepository = observationRepository,
+       _yardListRepository = yardListRepository,
        _locationService = locationService,
        _reverseGeocodingService = reverseGeocodingService,
        super(
@@ -31,6 +35,8 @@ class ObservationFormBloc
            selectedSpecies: selectedSpecies,
            position: initialPosition,
            timestamp: initialTimestamp ?? DateTime.now(),
+           yardLists: yardListRepository.current?.lists ?? const [],
+           selectedYardListId: yardListRepository.current?.activeId,
          ),
        ) {
     on<ObservationFormLocationRequested>(_onLocationRequested);
@@ -41,10 +47,13 @@ class ObservationFormBloc
     on<ObservationFormLocationCleared>(_onLocationCleared);
     on<ObservationFormmunicipalityChanged>(_onmunicipalityChanged);
     on<ObservationFormSpeciesRemoved>(_onSpeciesRemoved);
+    on<ObservationFormYardListSelected>(_onYardListSelected);
+    on<ObservationFormYardListAdded>(_onYardListAdded);
     on<ObservationFormSubmitted>(_onSubmitted);
   }
 
   final ObservationRepository _observationRepository;
+  final YardListRepository _yardListRepository;
   final LocationService _locationService;
   final ReverseGeocodingService _reverseGeocodingService;
 
@@ -141,6 +150,46 @@ class ObservationFormBloc
     emit(state.copyWith(selectedSpecies: updated));
   }
 
+  /// Picks the yard list to save to, and ticks the yard list type.
+  void _onYardListSelected(
+    ObservationFormYardListSelected event,
+    Emitter<ObservationFormState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        selectedYardListId: event.id,
+        selectedTypes: {...state.selectedTypes, ObservationType.yard},
+      ),
+    );
+  }
+
+  /// Creates a yard list and picks it, like [_onYardListSelected].
+  Future<void> _onYardListAdded(
+    ObservationFormYardListAdded event,
+    Emitter<ObservationFormState> emit,
+  ) async {
+    try {
+      final created = await _yardListRepository.create(event.name);
+      emit(
+        state.copyWith(
+          yardLists: _yardListRepository.current?.lists ?? [
+            ...state.yardLists,
+            created,
+          ],
+          selectedYardListId: created.id,
+          selectedTypes: {...state.selectedTypes, ObservationType.yard},
+        ),
+      );
+    } on YardListNameException catch (error) {
+      emit(
+        state.copyWith(
+          status: ObservationFormStatus.failure,
+          errorMessage: error.message,
+        ),
+      );
+    }
+  }
+
   Future<void> _onSubmitted(
     ObservationFormSubmitted event,
     Emitter<ObservationFormState> emit,
@@ -159,6 +208,18 @@ class ObservationFormBloc
         state.copyWith(
           status: ObservationFormStatus.failure,
           errorMessage: 'Valitse vähintään yksi pinnatyyppi.',
+        ),
+      );
+      return;
+    }
+
+    final yardListId = state.selectedYardListId;
+    if (state.selectedTypes.contains(ObservationType.yard) &&
+        yardListId == null) {
+      emit(
+        state.copyWith(
+          status: ObservationFormStatus.failure,
+          errorMessage: 'Valitse pihapinna.',
         ),
       );
       return;
@@ -194,7 +255,10 @@ class ObservationFormBloc
         }
 
         // 2. Poista pihapinna tallennettavista, jos se on jo havaittu
-        if (existingObs.any((o) => o.type == ObservationType.yard)) {
+        //    valitulla pihapinnalla
+        if (existingObs.any(
+          (o) => o.type == ObservationType.yard && o.yardListId == yardListId,
+        )) {
           typesToSave.remove(ObservationType.yard);
         }
 
@@ -232,8 +296,14 @@ class ObservationFormBloc
                 state.municipality?.trim().isEmpty == true
                     ? null
                     : state.municipality,
+            yardListId: type == ObservationType.yard ? yardListId : null,
           );
         }
+      }
+      if (yardListId != null &&
+          state.selectedTypes.contains(ObservationType.yard)) {
+        // Preselect the same yard list next time.
+        await _yardListRepository.setActive(yardListId);
       }
       emit(state.copyWith(status: ObservationFormStatus.success));
     } catch (error) {

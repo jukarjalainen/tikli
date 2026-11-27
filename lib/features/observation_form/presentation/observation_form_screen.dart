@@ -70,22 +70,39 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<ObservationFormBloc, ObservationFormState>(
-      listenWhen: (previous, current) => previous.status != current.status,
-      listener: (context, state) {
-        if (state.status == ObservationFormStatus.success) {
-          context.read<SpeciesListBloc>().add(const SpeciesSelectionCleared());
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Havainto tallennettu')));
-          Navigator.of(context).pop();
-        } else if (state.status == ObservationFormStatus.failure &&
-            state.errorMessage != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ObservationFormBloc, ObservationFormState>(
+          listenWhen: (previous, current) => previous.status != current.status,
+          listener: (context, state) {
+            if (state.status == ObservationFormStatus.success) {
+              context.read<SpeciesListBloc>().add(
+                const SpeciesSelectionCleared(),
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Havainto tallennettu')),
+              );
+              Navigator.of(context).pop();
+            } else if (state.status == ObservationFormStatus.failure &&
+                state.errorMessage != null) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+            }
+          },
+        ),
+        BlocListener<ObservationFormBloc, ObservationFormState>(
+          listenWhen:
+              (previous, current) =>
+                  previous.recenterCount != current.recenterCount &&
+                  current.position != null,
+          listener: (context, state) {
+            // Drop a pending drag so it doesn't replace the new location.
+            _mapMoveDebounce?.cancel();
+            _mapController.move(state.position!, _mapController.camera.zoom);
+          },
+        ),
+      ],
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Lisaa havainto'),
@@ -296,6 +313,13 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
                                   ),
                                 ),
                               ),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: _RecenterMapButton(
+                                  isLocating: state.isLocating,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -416,6 +440,45 @@ class _ObservationFormScreenState extends State<ObservationFormScreen> {
       return;
     }
     bloc.add(ObservationFormLocationChanged(LatLng(lat, lng)));
+  }
+}
+
+/// Moves the map back to the user's current location. Shows a spinner while
+/// the location is looked up.
+class _RecenterMapButton extends StatelessWidget {
+  const _RecenterMapButton({required this.isLocating});
+
+  final bool isLocating;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton.filled(
+      tooltip: 'Oma sijainti',
+      style: IconButton.styleFrom(
+        backgroundColor: Colors.white,
+        disabledBackgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF57BF32),
+        elevation: 2,
+        shadowColor: Colors.black26,
+      ),
+      onPressed:
+          isLocating
+              ? null
+              : () => context.read<ObservationFormBloc>().add(
+                const ObservationFormLocationRequested(recenter: true),
+              ),
+      icon:
+          isLocating
+              ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xFF57BF32),
+                ),
+              )
+              : const Icon(Icons.my_location),
+    );
   }
 }
 

@@ -25,8 +25,17 @@ class ObservationFormTimestampChanged extends ObservationFormEvent {
   List<Object?> get props => [timestamp];
 }
 
+/// Looks up the user's current location and uses it as the position.
 class ObservationFormLocationRequested extends ObservationFormEvent {
-  const ObservationFormLocationRequested();
+  const ObservationFormLocationRequested({this.recenter = false});
+
+  /// Whether the user asked for this, so the map should move to the location
+  /// and a failure should be reported. The lookup made when the form opens
+  /// leaves this false.
+  final bool recenter;
+
+  @override
+  List<Object?> get props => [recenter];
 }
 
 class ObservationFormLocationChanged extends ObservationFormEvent {

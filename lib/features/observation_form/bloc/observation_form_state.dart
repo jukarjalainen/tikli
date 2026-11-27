@@ -13,6 +13,8 @@ class ObservationFormState extends Equatable {
     this.selectedCustomListId,
     this.status = ObservationFormStatus.editing,
     this.errorMessage,
+    this.isLocating = false,
+    this.recenterCount = 0,
   }) : selectedSpecies = List.unmodifiable(selectedSpecies),
        selectedTypes = selectedTypes ?? {ObservationType.yearly};
 
@@ -30,6 +32,13 @@ class ObservationFormState extends Equatable {
   final ObservationFormStatus status;
   final String? errorMessage;
 
+  /// Whether a location lookup the user asked for is in progress.
+  final bool isLocating;
+
+  /// Goes up by one each time a location lookup the user asked for finishes,
+  /// telling the map to move to [position].
+  final int recenterCount;
+
   ObservationFormState copyWith({
     List<Species>? selectedSpecies,
     Set<ObservationType>? selectedTypes,
@@ -43,6 +52,8 @@ class ObservationFormState extends Equatable {
     String? selectedCustomListId,
     ObservationFormStatus? status,
     String? errorMessage,
+    bool? isLocating,
+    int? recenterCount,
   }) {
     return ObservationFormState(
       selectedSpecies:
@@ -58,6 +69,8 @@ class ObservationFormState extends Equatable {
       selectedCustomListId: selectedCustomListId ?? this.selectedCustomListId,
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
+      isLocating: isLocating ?? this.isLocating,
+      recenterCount: recenterCount ?? this.recenterCount,
     );
   }
 
@@ -81,5 +94,7 @@ class ObservationFormState extends Equatable {
     selectedCustomListId,
     status,
     errorMessage,
+    isLocating,
+    recenterCount,
   ];
 }

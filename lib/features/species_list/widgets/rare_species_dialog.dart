@@ -80,12 +80,7 @@ class _RareSpeciesDialogState extends State<RareSpeciesDialog> {
     }
 
     // Create a temporary Species object for the rare bird
-    final rareSpecies = Species(
-      id: 'rare_${speciesName.toLowerCase().replaceAll(' ', '_')}',
-      commonName: speciesName,
-    );
-
-    Navigator.of(context).pop(rareSpecies);
+    Navigator.of(context).pop(Species.rare(speciesName));
   }
 
   void _onSuggestionTap(String suggestion) {

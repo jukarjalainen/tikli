@@ -18,9 +18,9 @@ class ObservationRepository {
     required this.speciesRepository,
     ReverseGeocodingService? geocodingService,
     DatabaseService? databaseService,
-  }) : _dbService = databaseService ?? DatabaseService(),
-       _reverseGeocodingService = geocodingService ?? ReverseGeocodingService(),
-       _ownsGeocodingService = geocodingService == null {
+  }) : _reverseGeocodingService = geocodingService ?? ReverseGeocodingService(),
+       _ownsGeocodingService = geocodingService == null,
+       _dbService = databaseService ?? DatabaseService() {
     _initDatabase();
   }
   final SpeciesRepository speciesRepository;
@@ -170,10 +170,8 @@ class ObservationRepository {
     final dbObservations = await _dbService.getAllObservations();
     _observations.addAll(
       dbObservations.map((obs) {
-        final species = speciesMap[obs['speciesId']];
-        if (species == null) {
-          throw Exception('Species not found for ID: \\${obs['speciesId']}');
-        }
+        final speciesId = obs['speciesId'] as String;
+        final species = speciesMap[speciesId] ?? Species.unlisted(speciesId);
         return Observation.fromMap(obs, species);
       }),
     );

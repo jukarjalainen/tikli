@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_routes.dart';
 import '../../../core/enums/observation_type.dart';
+import '../../../core/models/observation.dart';
 import '../../../shared/widgets/binoculars_icon.dart';
 import '../bloc/observation_list_bloc.dart';
 import '../widgets/observation_list_item.dart';
@@ -119,10 +120,12 @@ class _ListDropdown extends StatelessWidget {
   }
 }
 
-/// The year picker for the yearly list, the species count and the species of
-/// the list the app bar shows.
+/// The year picker for the yearly list, and the species of the list the app
+/// bar shows with their count floating in the bottom right corner.
 class _ObservationListBody extends StatelessWidget {
   const _ObservationListBody({required this.state, required this.dateFormat});
+
+  static const listAreaKey = Key('observationListArea');
 
   final ObservationListState state;
   final DateFormat dateFormat;
@@ -133,46 +136,80 @@ class _ObservationListBody extends StatelessWidget {
     final displayObservations = state.observationsFor(type);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+        if (type == ObservationType.yearly)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: _YearDropdown(state: state),
+          ),
+        Expanded(
+          child: Stack(
+            key: listAreaKey,
             children: [
-              if (type == ObservationType.yearly) ...[
-                Expanded(child: _YearDropdown(state: state)),
-                const SizedBox(width: 16),
-              ] else
-                const Spacer(),
-              _ObservationCountBadge(count: displayObservations.length),
+              Positioned.fill(
+                child: _SpeciesList(
+                  state: state,
+                  observations: displayObservations,
+                  dateFormat: dateFormat,
+                ),
+              ),
+              Positioned(
+                right: 16,
+                // Above the phone's own navigation buttons, which the app is
+                // drawn under.
+                bottom: MediaQuery.paddingOf(context).bottom + 16,
+                child: _ObservationCountBadge(
+                  count: displayObservations.length,
+                ),
+              ),
             ],
           ),
         ),
-        Expanded(
-          child:
-              displayObservations.isEmpty
-                  ? _EmptyState(
-                    message:
-                        type == ObservationType.custom &&
-                                state.customLists.isEmpty
-                            ? 'Ei omia listoja. Lisää lista '
-                                'havaintolomakkeella.'
-                            : 'No observations for this filter',
-                  )
-                  : ListView.separated(
-                    itemCount: displayObservations.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final observation = displayObservations[index];
-                      return ObservationListItem(
-                        key: ValueKey(observation.id),
-                        observation: observation,
-                        dateFormat: dateFormat,
-                      );
-                    },
-                  ),
-        ),
       ],
+    );
+  }
+}
+
+/// The species of the list the app bar shows, or why there are none.
+class _SpeciesList extends StatelessWidget {
+  const _SpeciesList({
+    required this.state,
+    required this.observations,
+    required this.dateFormat,
+  });
+
+  final ObservationListState state;
+  final List<Observation> observations;
+  final DateFormat dateFormat;
+
+  @override
+  Widget build(BuildContext context) {
+    if (observations.isEmpty) {
+      return _EmptyState(
+        message:
+            state.filterType == ObservationType.custom &&
+                    state.customLists.isEmpty
+                ? 'Ei omia listoja. Lisää lista havaintolomakkeella.'
+                : 'No observations for this filter',
+      );
+    }
+    return ListView.separated(
+      // Room to scroll the last species up from under the count badge and the
+      // phone's navigation buttons.
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.paddingOf(context).bottom + 64,
+      ),
+      itemCount: observations.length,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        final observation = observations[index];
+        return ObservationListItem(
+          key: ValueKey(observation.id),
+          observation: observation,
+          dateFormat: dateFormat,
+        );
+      },
     );
   }
 }
@@ -191,10 +228,8 @@ class _YearDropdown extends StatelessWidget {
       items:
           state.availableYears
               .map(
-                (year) => DropdownMenuItem(
-                  value: year,
-                  child: Text(year.toString()),
-                ),
+                (year) =>
+                    DropdownMenuItem(value: year, child: Text(year.toString())),
               )
               .toList(),
       onChanged: (value) {
@@ -226,8 +261,12 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
+/// The species count. Floats over the list, so it is opaque: the species
+/// scroll underneath it.
 class _ObservationCountBadge extends StatelessWidget {
   const _ObservationCountBadge({required this.count});
+
+  static const badgeKey = Key('observationCountBadge');
 
   final int count;
 
@@ -236,11 +275,22 @@ class _ObservationCountBadge extends StatelessWidget {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     return Container(
+      key: badgeKey,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: primary.withOpacity(0.12),
+        color: Color.alphaBlend(
+          primary.withValues(alpha: 0.12),
+          theme.colorScheme.surface,
+        ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: primary.withOpacity(0.4)),
+        border: Border.all(color: primary.withValues(alpha: 0.4)),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.shadow.withValues(alpha: 0.15),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       child: Text(
         'Yhteensä: $count',

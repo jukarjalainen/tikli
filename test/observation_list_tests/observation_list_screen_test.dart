@@ -160,6 +160,56 @@ void main() {
     }
   });
 
+  testWidgets('floats the count over the list, which starts at the app bar', (
+    tester,
+  ) async {
+    const listArea = Key('observationListArea');
+    const badge = Key('observationCountBadge');
+    now = newYearsDay;
+    await pumpScreen(tester);
+
+    // Vuodenpinnat: the year picker sits alone above the list.
+    final yearPicker = tester.getRect(
+      find.byType(DropdownButtonFormField<int>),
+    );
+    expect(
+      tester.getTopLeft(find.byKey(listArea)).dy,
+      greaterThanOrEqualTo(yearPicker.bottom),
+    );
+
+    for (final label in ['Elämänpinnat', 'Pihapinna']) {
+      await openListPicker(tester);
+      await tester.tap(find.text(label).last);
+      await tester.pumpAndSettle();
+
+      final area = tester.getRect(find.byKey(listArea));
+      expect(area.top, tester.getRect(find.byType(AppBar)).bottom);
+      final count = tester.getRect(find.byKey(badge));
+      expect(area.contains(count.topLeft), isTrue);
+      expect(area.contains(count.bottomRight), isTrue);
+      // Bottom right corner.
+      expect(count.right, greaterThan(area.center.dx));
+      expect(count.top, greaterThan(area.center.dy));
+    }
+  });
+
+  testWidgets('keeps the count above the phone navigation buttons', (
+    tester,
+  ) async {
+    const navigationBarHeight = 48.0;
+    tester.view.devicePixelRatio = 1;
+    tester.view.padding = const FakeViewPadding(bottom: navigationBarHeight);
+    addTearDown(tester.view.reset);
+    now = newYearsDay;
+    await pumpScreen(tester);
+
+    final screenHeight = tester.view.physicalSize.height;
+    expect(
+      tester.getRect(find.byKey(const Key('observationCountBadge'))).bottom,
+      lessThanOrEqualTo(screenHeight - navigationBarHeight - 16),
+    );
+  });
+
   testWidgets('offers every list in one dropdown, Vuodenpinnat first', (
     tester,
   ) async {

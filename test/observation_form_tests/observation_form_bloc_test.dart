@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:tikli/core/enums/observation_type.dart';
@@ -8,7 +10,24 @@ import 'package:tikli/features/observation_form/bloc/observation_form_bloc.dart'
 
 import '../helpers/observation_fakes.dart';
 
-class _FakeLocationService extends Fake implements LocationService {}
+/// Answers location lookups with [location], or with [pending] when set,
+/// and remembers what it found like the real service.
+class _FakeLocationService extends Fake implements LocationService {
+  LatLng? location;
+  Completer<LatLng?>? pending;
+  var calls = 0;
+
+  @override
+  LatLng? lastLocation;
+
+  @override
+  Future<LatLng?> getCurrentLocation() async {
+    calls++;
+    final found = await (pending?.future ?? Future.value(location));
+    if (found != null) lastLocation = found;
+    return found;
+  }
+}
 
 class _FakeReverseGeocodingService extends Fake
     implements ReverseGeocodingService {
@@ -19,16 +38,18 @@ class _FakeReverseGeocodingService extends Fake
 void main() {
   late FakeObservationRepository observations;
   late CustomListRepository customLists;
+  late _FakeLocationService locationService;
 
   Future<void> settle() => Future<void>.delayed(Duration.zero);
 
-  ObservationFormBloc createBloc() {
+  ObservationFormBloc createBloc({LatLng? initialPosition}) {
     final bloc = ObservationFormBloc(
       observationRepository: observations,
       customListRepository: customLists,
-      locationService: _FakeLocationService(),
+      locationService: locationService,
       reverseGeocodingService: _FakeReverseGeocodingService(),
       selectedSpecies: const [talitiainen],
+      initialPosition: initialPosition,
       initialTimestamp: DateTime(2026, 6, 1),
     );
     addTearDown(bloc.close);
@@ -62,6 +83,7 @@ void main() {
 
   setUp(() async {
     observations = FakeObservationRepository();
+    locationService = _FakeLocationService();
     customLists = fakeCustomListRepository(
       customLists: [pihapinna, mokki],
       activeCustomListId: 'pihapinna',
@@ -164,5 +186,128 @@ void main() {
     expect(bloc.state.errorMessage, 'Lista "mökki" on jo olemassa.');
     expect(customLists.current!.lists, [pihapinna, mokki]);
     expect(bloc.state.selectedCustomListId, 'pihapinna');
+  });
+
+  group('current location', () {
+    const home = LatLng(60.17, 24.94);
+    const elsewhere = LatLng(61.5, 23.8);
+
+    test('moves the map to the location the user asked for', () async {
+      locationService.location = home;
+      final bloc = createBloc(initialPosition: elsewhere)
+        ..add(const ObservationFormLocationRequested(recenter: true));
+      await settle();
+
+      expect(bloc.state.position, home);
+      expect(bloc.state.recenterCount, 1);
+      expect(bloc.state.isLocating, isFalse);
+    });
+
+    test('moves the map back even when the position is unchanged', () async {
+      locationService.location = home;
+      final bloc = createBloc(initialPosition: home)
+        ..add(const ObservationFormLocationRequested(recenter: true));
+      await settle();
+      bloc.add(const ObservationFormLocationRequested(recenter: true));
+      await settle();
+
+      expect(bloc.state.position, home);
+      expect(bloc.state.recenterCount, 2);
+    });
+
+    test('reports a location the user asked for that is unavailable', () async {
+      final bloc = createBloc(initialPosition: elsewhere)
+        ..add(const ObservationFormLocationRequested(recenter: true));
+      await settle();
+
+      expect(bloc.state.position, elsewhere);
+      expect(bloc.state.recenterCount, 0);
+      expect(bloc.state.isLocating, isFalse);
+      expect(bloc.state.status, ObservationFormStatus.failure);
+      expect(bloc.state.errorMessage, 'Sijaintia ei saatu.');
+    });
+
+    test('says nothing when the location is unavailable on opening', () async {
+      final bloc = createBloc()..add(const ObservationFormLocationRequested());
+      await settle();
+
+      expect(bloc.state.position, isNull);
+      expect(bloc.state.status, ObservationFormStatus.editing);
+      expect(bloc.state.errorMessage, isNull);
+    });
+
+    test('uses the location found on opening without moving the map', () async {
+      locationService.location = home;
+      final bloc = createBloc()..add(const ObservationFormLocationRequested());
+      await settle();
+      await settle();
+
+      expect(bloc.state.position, home);
+      expect(bloc.state.recenterCount, 0);
+    });
+
+    test('moves to the last known location before the lookup ends', () async {
+      locationService
+        ..lastLocation = home
+        ..pending = Completer<LatLng?>();
+      final bloc = createBloc(initialPosition: elsewhere)
+        ..add(const ObservationFormLocationRequested(recenter: true));
+      await settle();
+
+      expect(bloc.state.position, home);
+      expect(bloc.state.recenterCount, 1);
+      expect(bloc.state.isLocating, isTrue);
+
+      // A few metres off: not worth moving the map again.
+      locationService.pending!.complete(const LatLng(60.17005, 24.94));
+      await settle();
+
+      expect(bloc.state.position, home);
+      expect(bloc.state.recenterCount, 1);
+      expect(bloc.state.isLocating, isFalse);
+    });
+
+    test('moves again when the fresh location is elsewhere', () async {
+      locationService
+        ..lastLocation = elsewhere
+        ..location = home;
+      final bloc =
+          createBloc()
+            ..add(const ObservationFormLocationRequested(recenter: true));
+      await settle();
+
+      expect(bloc.state.position, home);
+      expect(bloc.state.recenterCount, 2);
+      expect(bloc.state.isLocating, isFalse);
+    });
+
+    test('stays at the last known location if the lookup fails', () async {
+      locationService.lastLocation = home;
+      final bloc = createBloc(initialPosition: elsewhere)
+        ..add(const ObservationFormLocationRequested(recenter: true));
+      await settle();
+
+      expect(bloc.state.position, home);
+      expect(bloc.state.recenterCount, 1);
+      expect(bloc.state.isLocating, isFalse);
+      expect(bloc.state.status, ObservationFormStatus.editing);
+    });
+
+    test('ignores another request while looking up the location', () async {
+      locationService.pending = Completer<LatLng?>();
+      final bloc = createBloc(initialPosition: elsewhere)
+        ..add(const ObservationFormLocationRequested(recenter: true));
+      await settle();
+      expect(bloc.state.isLocating, isTrue);
+
+      bloc.add(const ObservationFormLocationRequested(recenter: true));
+      await settle();
+      locationService.pending!.complete(home);
+      await settle();
+
+      expect(locationService.calls, 1);
+      expect(bloc.state.recenterCount, 1);
+      expect(bloc.state.isLocating, isFalse);
+    });
   });
 }

@@ -4,6 +4,12 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 class LocationService {
+  LatLng? _lastLocation;
+
+  /// The location [getCurrentLocation] last found, if any. Available at
+  /// once, while a fresh lookup can take seconds.
+  LatLng? get lastLocation => _lastLocation;
+
   Future<LatLng?> getCurrentLocation() async {
     try {
       if (!await Geolocator.isLocationServiceEnabled()) {
@@ -42,7 +48,7 @@ class LocationService {
       if (!latitude.isFinite || !longitude.isFinite) {
         return null;
       }
-      return LatLng(latitude, longitude);
+      return _lastLocation = LatLng(latitude, longitude);
     } catch (_) {
       return null;
     }

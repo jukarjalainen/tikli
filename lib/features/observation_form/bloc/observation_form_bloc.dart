@@ -61,11 +61,72 @@ class ObservationFormBloc
     ObservationFormLocationRequested event,
     Emitter<ObservationFormState> emit,
   ) async {
-    final resolved = await _locationService.getCurrentLocation();
-    if (resolved == null) {
+    if (!event.recenter) {
+      final resolved = await _locationService.getCurrentLocation();
+      if (resolved != null) {
+        add(ObservationFormLocationChanged(resolved));
+      }
       return;
     }
-    add(ObservationFormLocationChanged(resolved));
+
+    if (state.isLocating) {
+      return;
+    }
+
+    // A fresh lookup takes seconds, so move to the last known location at
+    // once and only move again if the fresh one is noticeably elsewhere.
+    final last = _locationService.lastLocation;
+    if (last != null) {
+      _recenter(last, emit, isLocating: true);
+    } else {
+      emit(state.copyWith(isLocating: true));
+    }
+
+    final resolved = await _locationService.getCurrentLocation();
+    if (resolved == null) {
+      emit(
+        last != null
+            ? state.copyWith(isLocating: false)
+            : state.copyWith(
+              isLocating: false,
+              status: ObservationFormStatus.failure,
+              errorMessage: 'Sijaintia ei saatu.',
+            ),
+      );
+    } else if (last != null &&
+        _distance(last, resolved) <= _recenterThresholdMeters) {
+      emit(state.copyWith(isLocating: false));
+    } else {
+      _recenter(resolved, emit, isLocating: false);
+    }
+
+    final position = state.position;
+    if (position != null && state.municipality == null) {
+      await _lookupMunicipality(position, emit);
+    }
+  }
+
+  /// How far a fresh location must be from the last known one for the map
+  /// to move a second time.
+  static const _recenterThresholdMeters = 25.0;
+  static const _distance = Distance();
+
+  /// Sets the position to [location] and moves the map there. The map is
+  /// moved even when the position stays the same, since the user may have
+  /// dragged it away without the position catching up yet.
+  void _recenter(
+    LatLng location,
+    Emitter<ObservationFormState> emit, {
+    required bool isLocating,
+  }) {
+    emit(
+      state.copyWith(
+        position: location,
+        clearmunicipality: state.position != location,
+        isLocating: isLocating,
+        recenterCount: state.recenterCount + 1,
+      ),
+    );
   }
 
   void _onTypeToggled(
@@ -104,18 +165,24 @@ class ObservationFormBloc
     }
 
     emit(state.copyWith(position: event.position, clearmunicipality: true));
+    await _lookupMunicipality(event.position, emit);
+  }
 
+  /// Fills in the municipality of [position], unless the position has
+  /// changed again by the time the lookup finishes.
+  Future<void> _lookupMunicipality(
+    LatLng position,
+    Emitter<ObservationFormState> emit,
+  ) async {
     String? municipality;
     try {
-      municipality = await _reverseGeocodingService.lookupDescription(
-        event.position,
-      );
+      municipality = await _reverseGeocodingService.lookupDescription(position);
     } catch (_) {
       municipality = null;
     }
     final trimmed = municipality?.trim();
 
-    if (state.position != event.position) {
+    if (state.position != position) {
       return;
     }
     if (trimmed == null || trimmed.isEmpty) {

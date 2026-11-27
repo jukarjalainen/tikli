@@ -17,12 +17,14 @@ class ObservationRepository {
   ObservationRepository({
     required this.speciesRepository,
     ReverseGeocodingService? geocodingService,
+    DatabaseService? databaseService,
   }) : _reverseGeocodingService = geocodingService ?? ReverseGeocodingService(),
-       _ownsGeocodingService = geocodingService == null {
+       _ownsGeocodingService = geocodingService == null,
+       _dbService = databaseService ?? DatabaseService() {
     _initDatabase();
   }
   final SpeciesRepository speciesRepository;
-  final DatabaseService _dbService = DatabaseService();
+  final DatabaseService _dbService;
 
   final List<Observation> _observations = [];
   final StreamController<List<Observation>> _controller =
@@ -155,13 +157,11 @@ class ObservationRepository {
     final dbObservations = await _dbService.getAllObservations();
     _observations.addAll(
       dbObservations.map((obs) {
-        final species = speciesMap[obs['speciesId']];
-        if (species == null) {
-          throw Exception('Species not found for ID: \\${obs['speciesId']}');
-        }
+        final speciesId = obs['speciesId'] as String;
+        final species = speciesMap[speciesId] ?? Species.unlisted(speciesId);
         return Observation.fromMap(obs, species);
       }),
     );
-    _controller.add(_observations);
+    _notify();
   }
 }
